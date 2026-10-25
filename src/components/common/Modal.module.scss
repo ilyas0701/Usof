@@ -1,0 +1,77 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(19, 36, 48, 0.45);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modal {
+  position: fixed;
+  inset: 20px;
+  max-width: 520px;
+  height: fit-content;
+  max-height: 92vh;
+  margin: auto;
+  background-color: var(--c-white);
+  border-radius: var(--br-3);
+  padding: var(--space-l);
+  box-shadow: var(--shadow-5);
+  z-index: 101;
+  overflow-y: auto;
+  animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+
+  @media (max-width: 576px) {
+    inset: 10px;
+    padding: var(--space-m);
+    border-radius: var(--br-2);
+  }
+}
+
+.closeButton {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--c-dark-blue-400);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-default);
+  z-index: 10;
+
+  &:hover {
+    background-color: var(--c-dark-blue-100);
+    color: var(--c-dark-blue-800);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--c-sea-blue-500);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

@@ -1,0 +1,13 @@
+export default function CrossIcon({ width = 14, height = 14, fill = '#495A7A', className, ...props }) {
+  return (
+    <svg width={width} height={height} viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} {...props}>
+      <path
+        d="M1 1L13 13M1 13L13 1"
+        stroke={fill}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}

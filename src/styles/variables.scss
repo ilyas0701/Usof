@@ -1,0 +1,77 @@
+:root {
+  --c-yellow-800: #a6270a;
+  --c-yellow-700: #c3560f;
+  --c-yellow-600: #d67412;
+  --c-yellow-500: #f6a717;
+  --c-yellow-400: #ffd100;
+  --c-yellow-300: #ffe261;
+  --c-yellow-200: #fff29f;
+  --c-yellow-100: #fffceb;
+
+  --c-sea-blue-800: #1d384a;
+  --c-sea-blue-700: #00455c;
+  --c-sea-blue-600: #005c7a;
+  --c-sea-blue-500: #007398;
+  --c-sea-blue-400: #96b7d3;
+  --c-sea-blue-300: #c6d8e6;
+  --c-sea-blue-200: #dde8f0;
+  --c-sea-blue-100: #f5f8fb;
+
+  --c-dark-blue-800: #132430;
+  --c-dark-blue-700: #293a4e;
+  --c-dark-blue-600: #374861;
+  --c-dark-blue-500: #495a7a;
+  --c-dark-blue-400: #808da4;
+  --c-dark-blue-300: #abb6c6;
+  --c-dark-blue-200: #dce3eb;
+  --c-dark-blue-100: #f4f6f9;
+
+  --c-green-800: #25561a;
+  --c-green-700: #347924;
+  --c-green-600: #3b8a29;
+  --c-green-500: #4aad33;
+  --c-green-400: #8cd87b;
+  --c-green-300: #b2e5a7;
+  --c-green-200: #d9f2d3;
+  --c-green-100: #f2faf0;
+
+  --c-red-800: #821a08;
+  --c-red-700: #ae230a;
+  --c-red-600: #d92b0d;
+  --c-red-500: #e54634;
+  --c-red-400: #ec786a;
+  --c-red-300: #f4b1a9;
+  --c-red-200: #fbe2df;
+  --c-red-100: #fef7f6;
+
+  --c-white: #ffffff;
+  --c-black: #000000;
+  --c-gradient: linear-gradient(147deg, #ffe261 0%, #ffd100 52%, #f6a717 100%);
+  --c-header-gradient: linear-gradient(130deg, #ffe261 3.84%, #ffd100 50.28%, #f6a717 93.9%);
+
+  --br-1: 10px;
+  --br-2: 20px;
+  --br-3: 40px;
+
+  --border-1: 1px;
+  --border-2: 2px;
+
+  --space-xs: 5px;
+  --space-s: 10px;
+  --space-m: 20px;
+  --space-l: 40px;
+  --space-xl: 80px;
+
+  --font-family-base: 'Default Font', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-h0: 700 36px/44px var(--font-family-base);
+  --font-h1: 700 28px/36px var(--font-family-base);
+  --font-h2: 700 22px/30px var(--font-family-base);
+  --font-h3: 700 18px/24px var(--font-family-base);
+  --font-regular: 500 16px/22px var(--font-family-base);
+  --font-secondary: 500 14px/20px var(--font-family-base);
+  --font-additional: 500 12px/16px var(--font-family-base);
+  --font-small: 500 10px/14px var(--font-family-base);
+
+  --transition-default: all 250ms ease-out;
+}
+

@@ -1,0 +1,63 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: 100%;
+}
+
+.avatarWrapper {
+  position: relative;
+  margin-bottom: var(--space-m);
+}
+
+.avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: var(--c-gradient);
+  color: var(--c-dark-blue-800);
+  font-size: 32px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.onlineBadge {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 16px;
+  height: 16px;
+  background-color: var(--c-green-500);
+  border: 3px solid var(--c-white);
+  border-radius: 50%;
+}
+
+.name {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--c-dark-blue-800);
+  margin: 0 0 var(--space-s);
+}
+
+.badges {
+  display: flex;
+  gap: var(--space-s);
+  margin-bottom: var(--space-l);
+}
+
+.roleBadge {
+  padding: 4px 12px;
+  background-color: var(--c-sea-blue-200);
+  color: var(--c-sea-blue-800);
+  border-radius: var(--br-1);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.actions {
+  width: 100%;
+}

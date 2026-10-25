@@ -1,0 +1,48 @@
+$mq-xxs: 340px;
+$mq-xs: 390px;
+$mq-s: 576px;
+$mq-m: 768px;
+$mq-l: 992px;
+$mq-xl: 1280px;
+
+@mixin mq-r($width) {
+  @media only screen and (max-width: #{$width - 1px}) {
+    @content;
+  }
+}
+
+@mixin mq-xl {
+  @include mq-r($mq-xl) {
+    @content;
+  }
+}
+
+@mixin mq-l {
+  @include mq-r($mq-l) {
+    @content;
+  }
+}
+
+@mixin mq-m {
+  @include mq-r($mq-m) {
+    @content;
+  }
+}
+
+@mixin mq-s {
+  @include mq-r($mq-s) {
+    @content;
+  }
+}
+
+@mixin mq-xs {
+  @include mq-r($mq-xs) {
+    @content;
+  }
+}
+
+@mixin mq-xxs {
+  @include mq-r($mq-xxs) {
+    @content;
+  }
+}

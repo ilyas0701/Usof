@@ -1,0 +1,27 @@
+.chip {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--c-sea-blue-800);
+  background-color: var(--c-white);
+  border: 1px solid var(--c-sea-blue-400);
+  border-radius: var(--br-2);
+  padding: 4px 12px;
+  transition: var(--transition-default);
+  user-select: none;
+  text-decoration: none;
+
+  &:hover {
+    border-color: var(--c-sea-blue-600);
+    background-color: var(--c-sea-blue-100);
+  }
+
+  &.active {
+    background-color: var(--c-sea-blue-200);
+    border-color: var(--c-sea-blue-600);
+    color: var(--c-sea-blue-800);
+  }
+}

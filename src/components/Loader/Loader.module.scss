@@ -1,0 +1,41 @@
+.loader {
+  animation: loader-keyframes 1.2s cubic-bezier(0.42, 1, 1, 1) infinite;
+  display: inline-block;
+  vertical-align: middle;
+
+  &.primary {
+    .circle {
+      fill: var(--c-sea-blue-100);
+    }
+    .piece {
+      fill: var(--c-yellow-400);
+    }
+  }
+
+  &.secondary {
+    .circle {
+      fill: var(--c-yellow-300);
+    }
+    .piece {
+      fill: var(--c-white);
+    }
+  }
+
+  &.dark {
+    .circle {
+      fill: var(--c-dark-blue-200);
+    }
+    .piece {
+      fill: var(--c-dark-blue-800);
+    }
+  }
+}
+
+@keyframes loader-keyframes {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
