@@ -8,6 +8,8 @@ import ResourceState from '../components/common/ResourceState'
 import Button from '../components/Button/Button'
 import TextField from '../components/TextField/TextField'
 import InformationMessage from '../components/InformationMessage/InformationMessage'
+import ProfileQuestions from '../components/posts/ProfileQuestions'
+import Tabs from '../components/Tabs/Tabs'
 import s from '../components/common/Content.module.scss'
 
 function ProfileForm({ profile, onSaved }) {
@@ -121,6 +123,7 @@ function ProfileForm({ profile, onSaved }) {
 
 export default function ProfilePage({ id }) {
   const { user, token } = useAuth()
+  const [section, setSection] = useState(() => new URLSearchParams(window.location.search).get('tab') === 'posts' ? 'posts' : 'profile')
   const profile = useResource(
     useCallback((signal) => usersApi.get(id, signal), [id]),
     token,
@@ -129,6 +132,13 @@ export default function ProfilePage({ id }) {
   const isOwner = String(user?.userId) === String(id)
   return (
     <PageLayout title={isOwner ? 'My profile' : 'Profile'}>
+      {isOwner && (
+        <Tabs
+          tabs={[{ key: 'profile', label: 'My profile' }, { key: 'posts', label: 'My posts' }]}
+          activeKey={section}
+          onChange={setSection}
+        />
+      )}
       <ResourceState
         loading={profile.loading}
         error={profile.error}
@@ -136,6 +146,7 @@ export default function ProfilePage({ id }) {
       />
       {data && (
         <>
+          <div hidden={isOwner && section !== 'profile'}>
           <section className={s.card}>
             <div className={s.profile}>
               {data.profile_picture ? (
@@ -168,6 +179,10 @@ export default function ProfilePage({ id }) {
             <section className={s.card}>
               <ProfileForm profile={data} onSaved={profile.setData} />
             </section>
+          )}
+          </div>
+          {(!isOwner || section === 'posts') && (
+            <ProfileQuestions key={id} authorId={id} isOwner={isOwner} />
           )}
         </>
       )}

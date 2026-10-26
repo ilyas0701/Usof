@@ -20,7 +20,7 @@ const schemas = {
     Image: object({id: integer, post_id: integer, image_path: string, url: string}),
     PostPage: object({posts: array(reference("Post")), total: {type: "integer"}, page: integer, pageSize: integer}),
     Registration: object({login: {type: "string", minLength: 3, maxLength: 255, pattern: "^[a-zA-Z0-9_]+$"}, email: {type: "string", format: "email"}, password: {type: "string", format: "password", minLength: 8}, passwordConfirmation: {type: "string", format: "password"}}, ["login", "email", "password", "passwordConfirmation"]),
-    PostInput: object({title: {type: "string", maxLength: 255}, content: string, categories: {type: "array", minItems: 1, uniqueItems: true, items: integer}}, ["title", "content", "categories"]),
+    PostInput: object({status, title: {type: "string", maxLength: 255}, content: string, categories: {type: "array", minItems: 1, uniqueItems: true, items: integer}}, ["title", "content", "categories"]),
     CategoryInput: object({title: {type: "string", maxLength: 255}, description: {type: "string", nullable: true}}, ["title"]),
     LikeInput: object({type: reaction}, ["type"])
 };
@@ -65,6 +65,7 @@ function add(method, path, tag, summary, options = {}) {
 }
 
 const postQuery = [
+    query("author", integer, "Filter posts by author ID. Visibility rules still apply."),
     query("page", {...integer, default: 1}),
     query("pageSize", {...integer, maximum: 100, default: 10}),
     query("q", {type: "string", minLength: 1, maxLength: 100}, "Search post titles and content. Relevance is the default sort when q is set."),
@@ -103,7 +104,7 @@ add("get", "/api/posts/subscriptions", "Posts", "Get posts you follow", {auth: t
 add("post", "/api/posts", "Posts", "Create a post", {auth: true, body: reference("PostInput"), response: reference("Post"), created: true});
 add("get", "/api/posts/{id}", "Posts", "Get a post", {optionalAuth: true, response: reference("Post")});
 add("get", "/api/posts/{id}/events", "Posts", "Subscribe to live comment updates", {optionalAuth: true, description: "SSE stream with ready and comments-changed events. Refresh comments on either event, including after reconnecting. Send the access token in the Authorization header for protected posts.", response: string, responseType: "text/event-stream"});
-add("patch", "/api/posts/{id}", "Posts", "Update a post", {auth: true, description: "The author can edit text. The author or admin can change categories and lock state. Only an admin can change status.", body: object({title: string, content: string, categories: array(integer), status, is_locked: {type: "boolean"}}), response: reference("Post")});
+add("patch", "/api/posts/{id}", "Posts", "Update a post", {auth: true, description: "The author can edit text. The author or admin can change categories and lock state. The author or admin can change status.", body: object({title: string, content: string, categories: array(integer), status, is_locked: {type: "boolean"}}), response: reference("Post")});
 add("delete", "/api/posts/{id}", "Posts", "Delete a post", {auth: true, noContent: true});
 add("get", "/api/posts/{id}/categories", "Posts", "Get the categories of a post", {optionalAuth: true, response: array(reference("Category"))});
 add("get", "/api/posts/{id}/comments", "Posts", "Get the comments of a post", {optionalAuth: true, response: array(reference("Comment"))});
@@ -127,7 +128,7 @@ add("patch", "/api/categories/{id}", "Categories", "Update a category as an admi
 add("delete", "/api/categories/{id}", "Categories", "Delete a category as an admin", {auth: true, noContent: true});
 
 add("get", "/api/comments/{id}", "Comments", "Get a comment", {optionalAuth: true, response: reference("Comment")});
-add("patch", "/api/comments/{id}", "Comments", "Update a comment", {auth: true, description: "The author or an admin can edit content or lock the comment. Only an admin can change status.", body: object({content: string, status, is_locked: {type: "boolean"}}), response: reference("Comment")});
+add("patch", "/api/comments/{id}", "Comments", "Update a comment", {auth: true, description: "The author or an admin can edit content or lock the comment. The author or admin can change status.", body: object({content: string, status, is_locked: {type: "boolean"}}), response: reference("Comment")});
 add("delete", "/api/comments/{id}", "Comments", "Delete a comment", {auth: true, noContent: true});
 add("get", "/api/comments/{id}/like", "Comments", "Get reactions to a comment", {optionalAuth: true, response: array(reference("Like"))});
 add("post", "/api/comments/{id}/like", "Comments", "React to a comment", {auth: true, body: reference("LikeInput"), response: reference("Like"), created: true});
@@ -154,3 +155,4 @@ const openapi = {
 };
 
 export default openapi;
+

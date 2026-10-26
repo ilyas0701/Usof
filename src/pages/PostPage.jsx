@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { postsApi, commentsApi, reactionsApi } from '../api/postsApi'
 import { loadMembership } from '../api/postData'
 import { usersApi } from '../api/usersApi'
@@ -92,15 +92,6 @@ export default function PostPage({ id, commentId }) {
       [postId, token],
     ),
   )
-
-  useEffect(() => {
-    if (!postId) return
-    const anchor = commentId
-      ? `comment-${commentId}`
-      : window.location.hash.slice(1)
-    if (anchor)
-      document.getElementById(anchor)?.scrollIntoView({ block: 'start' })
-  }, [postId, commentId])
 
   const run = async (action, task) => {
     if (!isAuthenticated) return openLogin()

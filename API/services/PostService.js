@@ -185,6 +185,7 @@ class PostService {
         }
 
         const categoryId = query.category === undefined ? null : validId(query.category);
+        const authorId = query.author === undefined ? null : validId(query.author);
         const dateFrom = validDate(query.dateFrom, "dateFrom");
         const dateTo = validDate(query.dateTo, "dateTo");
 
@@ -197,6 +198,7 @@ class PostService {
             pageSize,
             sort,
             categoryId,
+            authorId,
             dateFrom: dateFrom ? `${dateFrom} 00:00:00` : null,
             dateTo: dateTo ? `${dateTo} 23:59:59` : null,
             status,
@@ -296,12 +298,16 @@ class PostService {
         const title = validText(data?.title, "title", 255);
         const content = validText(data?.content, "content", 65535);
         const categories = validCategories(data?.categories);
+        const status = data?.status ?? 'active';
+        if (!["active", "inactive"].includes(status)) {
+            throw new HttpError(400, "Status must be active or inactive");
+        }
 
         if (await PostModel.countCategories(categories) !== categories.length) {
             throw new HttpError(400, "Category does not exist");
         }
 
-        const id = await PostModel.create(userId, title, content, categories);
+        const id = await PostModel.create(userId, title, content, categories, status);
         return PostModel.findById(id);
     }
 
@@ -326,10 +332,6 @@ class PostService {
 
         if (("title" in data || "content" in data) && !isOwner) {
             throw new HttpError(403, "Only the author can edit the post content");
-        }
-
-        if ("status" in data && !isAdmin) {
-            throw new HttpError(403, "Only an admin can change the post status");
         }
 
         const changes = {};

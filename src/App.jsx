@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useState } from 'react'
 import AuthProvider from './context/AuthContext'
 import { useAuth } from './hooks/useAuth'
 import HomePage from './pages/HomePage'
@@ -11,6 +11,7 @@ import DirectoryPage from './pages/DirectoryPage'
 import PageLayout from './components/common/PageLayout'
 import Button from './components/Button/Button'
 import { navigate } from './utils/navigation'
+import SiteMenu from './components/common/SiteMenu'
 
 function readLocation() {
   return {
@@ -23,6 +24,14 @@ function readLocation() {
 function AppRoutes() {
   const [location, setLocation] = useState(readLocation)
   const { isAuthenticated, user } = useAuth()
+  useLayoutEffect(() => {
+    const previous = window.history.scrollRestoration
+    window.history.scrollRestoration = 'manual'
+    return () => { window.history.scrollRestoration = previous }
+  }, [])
+  useLayoutEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+  }, [location])
   useEffect(() => {
     const update = () => setLocation(readLocation())
     window.addEventListener('popstate', update)
@@ -73,7 +82,7 @@ function AppRoutes() {
       />
     )
   }
-  if (pathname === '/') return <HomePage onOpenAuth={openAuth} />
+  if (pathname === '/') return <HomePage key={search} onOpenAuth={openAuth} />
   if (pathname === '/posts/new') return <PostEditorPage />
   let match = pathname.match(/^\/posts\/(\d+)\/edit$/)
   if (match) return <PostEditorPage key={pathname} id={match[1]} />
@@ -84,7 +93,7 @@ function AppRoutes() {
   match = pathname.match(/^\/categories\/(\d+)$/)
   if (match) return <PostListPage key={pathname} categoryId={match[1]} />
   match = pathname.match(/^\/users\/(\d+)$/)
-  if (match) return <ProfilePage key={pathname} id={match[1]} />
+  if (match) return <ProfilePage key={pathname + search} id={match[1]} />
   if (pathname === '/users') return <DirectoryPage key={pathname} />
   if (pathname === '/favorites' || pathname === '/subscriptions')
     return <PostListPage key={pathname} collection={pathname.slice(1)} />
@@ -101,6 +110,7 @@ export default function App() {
   return (
     <AuthProvider>
       <AppRoutes />
+      <SiteMenu />
     </AuthProvider>
   )
 }

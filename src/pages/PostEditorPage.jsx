@@ -21,6 +21,7 @@ function PostForm({ post, categories, selectedCategories }) {
   const [categoryError, setCategoryError] = useState('')
   const [title, setTitle] = useState(post?.title || '')
   const [content, setContent] = useState(post?.content || '')
+  const [status, setStatus] = useState(post?.status || 'active')
   const [selected, setSelected] = useState(
     selectedCategories.map((category) => category.id),
   )
@@ -82,6 +83,7 @@ function PostForm({ post, categories, selectedCategories }) {
         title: title.trim(),
         content: content.trim(),
         categories: selected,
+        status,
       }
       const result = id
         ? await postsApi.update(id, body)
@@ -183,6 +185,14 @@ function PostForm({ post, categories, selectedCategories }) {
         )}
       </fieldset>
       {categoryBusy && <p className={s.muted} role="status">Creating category…</p>}
+      <label className={s.label}>
+        Status
+        <select className={s.select} value={status} onChange={(event) => setStatus(event.target.value)} disabled={busy}>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+        <span className={s.muted}>Inactive questions are visible only to you and administrators.</span>
+      </label>
       <label className={s.label}>
         Add images
         <span className={s.muted}>

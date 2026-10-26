@@ -95,7 +95,7 @@ class PostModel {
         return result.affectedRows > 0;
     }
 
-    static async findAll({page, pageSize, sort, categoryId, dateFrom, dateTo, status, search, user}) {
+    static async findAll({page, pageSize, sort, categoryId, authorId, dateFrom, dateTo, status, search, user}) {
         const conditions = [];
         const values = [];
 
@@ -109,6 +109,11 @@ class PostModel {
         } else if (status) {
             conditions.push("p.status = ?");
             values.push(status);
+        }
+
+        if (authorId) {
+            conditions.push("p.author_id = ?");
+            values.push(authorId);
         }
 
         if (categoryId) {
@@ -233,15 +238,15 @@ class PostModel {
         return rows[0].total;
     }
 
-    static async create(authorId, title, content, categories) {
+    static async create(authorId, title, content, categories, status = 'active') {
         const connection = await pool.getConnection();
 
         try {
             await connection.beginTransaction();
 
             const [result] = await connection.execute(
-                `INSERT INTO DbPost (author_id, title, content) VALUES (?, ?, ?)`,
-                [authorId, title, content]
+                `INSERT INTO DbPost (author_id, title, content, status) VALUES (?, ?, ?, ?)`,
+                [authorId, title, content, status]
             );
 
             for (const categoryId of categories) {

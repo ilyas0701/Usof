@@ -1,7 +1,8 @@
 import { useAuth } from '../../hooks/useAuth'
-import { followLink, openLogin } from '../../utils/navigation'
+import { followLink, navigate, openLogin } from '../../utils/navigation'
 import Button from '../Button/Button'
 import AccountMenu from './AccountMenu'
+import HeaderSearch from './HeaderSearch'
 import s from './Content.module.scss'
 
 export default function PageLayout({ title, children, actions }) {
@@ -11,11 +12,15 @@ export default function PageLayout({ title, children, actions }) {
       <header className={s.header}>
         <div className={s.headerInner}>
           <a className={s.logo} href="/" onClick={(event) => followLink(event, '/')}>USOF</a>
+          <HeaderSearch />
           <div className={s.actions}>
             {isAuthenticated ? (
               <AccountMenu />
             ) : (
-              <Button variant="secondary" size="small" onClick={openLogin}>Log in</Button>
+              <>
+                <Button variant="secondary" size="small" onClick={openLogin}>My account</Button>
+                <Button variant="primary" size="small" onClick={() => navigate(`/?view=auth&mode=register&returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`)}>Sign up</Button>
+              </>
             )}
           </div>
         </div>

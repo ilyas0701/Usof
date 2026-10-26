@@ -3,7 +3,6 @@ import QuestionCard from '../components/home/QuestionCard'
 import FilterDrawer from '../components/home/FilterDrawer'
 import Button from '../components/Button/Button'
 import FilterIcon from '../components/icons/FilterIcon'
-import SearchIcon from '../components/icons/SearchIcon'
 import CrossIcon from '../components/icons/CrossIcon'
 import { useAuth } from '../hooks/useAuth'
 import s from './HomePage.module.scss'
@@ -15,11 +14,12 @@ import useResource from '../hooks/useResource'
 import ResourceState from '../components/common/ResourceState'
 import Pagination from '../components/common/Pagination'
 import { navigate } from '../utils/navigation'
-import FloatingAccountPanel from '../components/common/FloatingAccountPanel'
+import AccountMenu from '../components/common/AccountMenu'
+import HeaderSearch from '../components/common/HeaderSearch'
 
 export default function HomePage({ onOpenAuth }) {
-  const { isAuthenticated, user, token, logoutUser } = useAuth()
-  const [searchQuery, setSearchQuery] = useState('')
+  const { isAuthenticated, token } = useAuth()
+  const searchQuery = new URLSearchParams(window.location.search).get('q') || ''
   const [selectedTag, setSelectedTag] = useState(null)
   const [activeTab, setActiveTab] = useState('all')
   const [page, setPage] = useState(1)
@@ -96,12 +96,9 @@ export default function HomePage({ onOpenAuth }) {
   const filteredQuestions = feed.data?.posts || []
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false)
   const closeFilters = useCallback(() => setIsFilterDrawerOpen(false), [])
-  const [isProfileOpen, setIsProfileOpen] = useState(false)
   const [headerState, setHeaderState] = useState('normal')
   const headerRef = useRef(null)
   const curvedSectionRef = useRef(null)
-  const profileMenuRef = useRef(null)
-  const profileButtonRef = useRef(null)
 
   useEffect(() => {
     const updateHeader = () => {
@@ -130,36 +127,6 @@ export default function HomePage({ onOpenAuth }) {
     }
   }, [])
 
-  useEffect(() => {
-    if (!isProfileOpen) return
-
-    const handlePointerDown = (event) => {
-      if (!profileMenuRef.current?.contains(event.target)) {
-        setIsProfileOpen(false)
-      }
-    }
-
-    const handleKeyDown = (event) => {
-      if (event.key === 'Escape') {
-        setIsProfileOpen(false)
-        profileButtonRef.current?.focus()
-      }
-    }
-
-    document.addEventListener('pointerdown', handlePointerDown)
-    document.addEventListener('keydown', handleKeyDown)
-
-    return () => {
-      document.removeEventListener('pointerdown', handlePointerDown)
-      document.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [isProfileOpen])
-
-  const displayName =
-    user?.login ||
-    user?.email ||
-    (user?.userId ? `User #${user.userId}` : 'Profile')
-  const initial = displayName.charAt(0).toUpperCase()
 
   const activeFilterCount =
     (activeTab !== 'all' ? 1 : 0) +
@@ -197,91 +164,10 @@ export default function HomePage({ onOpenAuth }) {
           <a href="#" className={s.logoLink}>
             <span className={s.logoText}>USOF</span>
           </a>
-
+          <HeaderSearch initialQuery={searchQuery} />
           <div className={s.headerRight}>
             {isAuthenticated ? (
-              <div className={s.profileDropdown} ref={profileMenuRef}>
-                <button
-                  ref={profileButtonRef}
-                  type="button"
-                  className={s.userBadge}
-                  onClick={() => setIsProfileOpen((open) => !open)}
-                  aria-label={`Account options for ${displayName}`}
-                  aria-expanded={isProfileOpen}
-                  aria-controls="account-menu"
-                >
-                  <span className={s.userAvatar}>
-                    {user.profile_picture ? (
-                      <img
-                        className={s.avatarImage}
-                        src={user.profile_picture}
-                        alt=""
-                      />
-                    ) : (
-                      initial
-                    )}
-                  </span>
-                  <span className={s.userName}>{displayName}</span>
-                </button>
-                {isProfileOpen && (
-                  <FloatingAccountPanel anchorRef={profileButtonRef}>
-                  <nav
-                    id="account-menu"
-                    className={s.profileMenu}
-                    aria-label="Account"
-                  >
-                    <a href="/" className={s.profileMenuItem}>Questions</a>
-                    <button type="button" className={s.profileMenuItem} onClick={() => navigate('/posts/new')}>Ask a question</button>
-                    <button
-                      type="button"
-                      className={s.profileMenuItem}
-                      onClick={() => {
-                        setIsProfileOpen(false)
-                        navigate(`/users/${user.userId}`)
-                      }}
-                    >
-                      Profile
-                    </button>
-                    <button
-                      type="button"
-                      className={s.profileMenuItem}
-                      onClick={() => navigate('/favorites')}
-                    >
-                      Favorites
-                    </button>
-                    <button
-                      type="button"
-                      className={s.profileMenuItem}
-                      onClick={() => navigate('/subscriptions')}
-                    >
-                      Following
-                    </button>
-                    <button
-                      type="button"
-                      className={s.profileMenuItem}
-                      onClick={() => navigate('/users')}
-                    >
-                      Users
-                    </button>
-                    {user.role === 'admin' && (
-                      <a className={s.profileMenuItem} href="/admin">
-                        Admin panel
-                      </a>
-                    )}
-                    <button
-                      type="button"
-                      className={s.profileMenuItem}
-                      onClick={() => {
-                        logoutUser()
-                        setIsProfileOpen(false)
-                      }}
-                    >
-                      Log out
-                    </button>
-                  </nav>
-                  </FloatingAccountPanel>
-                )}
-              </div>
+              <AccountMenu />
             ) : (
               <>
                 <Button
@@ -331,29 +217,6 @@ export default function HomePage({ onOpenAuth }) {
           <div id="questions" className={s.feedLayout}>
             <div className={s.feedControls}>
               <div className={s.searchAndFilterRow}>
-                <div className={s.searchInputWrapper}>
-                  <SearchIcon className={s.searchIcon} width={18} height={18} />
-                  <input
-                    type="search"
-                    maxLength={100}
-                    placeholder="Search by topic or question text..."
-                    value={searchQuery}
-                    onChange={(e) =>
-                      changeFilter(setSearchQuery)(e.target.value)
-                    }
-                    className={s.searchInput}
-                  />
-                  {searchQuery && (
-                    <button
-                      type="button"
-                      className={s.searchClearBtn}
-                      onClick={() => changeFilter(setSearchQuery)('')}
-                      aria-label="Clear search"
-                    >
-                      <CrossIcon width={12} height={12} />
-                    </button>
-                  )}
-                </div>
 
                 <button
                   type="button"
@@ -504,3 +367,5 @@ export default function HomePage({ onOpenAuth }) {
     </div>
   )
 }
+
+

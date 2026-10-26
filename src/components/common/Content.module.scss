@@ -21,6 +21,7 @@
   background: var(--c-header-gradient);
 }
 .headerInner {
+  position: relative;
   max-width: 1240px;
   margin: auto;
   padding: 20px;

@@ -3,7 +3,6 @@ export function navigate(path, replace = false) {
   if (!path.startsWith('/') || url.origin !== window.location.origin) path = '/'
   window.history[replace ? 'replaceState' : 'pushState'](null, '', path)
   window.dispatchEvent(new PopStateEvent('popstate'))
-  window.scrollTo({ top: 0 })
 }
 
 export function openLogin() {
