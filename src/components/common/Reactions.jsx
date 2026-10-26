@@ -12,6 +12,7 @@ export default function Reactions({
   id,
   initialLikes = [],
   disabled = false,
+  onChange,
 }) {
   const { user, isAuthenticated } = useAuth()
   const [state, setState] = useState({
@@ -19,7 +20,10 @@ export default function Reactions({
     likes: initialLikes,
   })
   const likes = state.source === initialLikes ? state.likes : initialLikes
-  const setLikes = (likes) => setState({ source: initialLikes, likes })
+  const setLikes = (likes) => {
+    setState({ source: initialLikes, likes })
+    onChange?.(likes)
+  }
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const ownReaction = likes.find(

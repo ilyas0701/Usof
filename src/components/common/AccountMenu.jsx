@@ -11,6 +11,7 @@ export default function AccountMenu() {
         {user.profile_picture ? <img className={s.avatarImage} src={user.profile_picture} alt="" /> : name.charAt(0).toUpperCase()}
       </span>
       <span className={s.userName}>{name}</span>
+      <span className={s.userRole}>{user.role === 'admin' ? 'Admin' : 'User'}</span>
     </button>
   )
 }

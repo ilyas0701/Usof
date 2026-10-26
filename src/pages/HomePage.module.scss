@@ -153,6 +153,17 @@
   justify-content: center;
 }
 
+.userRole {
+  flex: none;
+  padding: 3px 7px;
+  border-radius: 12px;
+  background: var(--c-dark-blue-800);
+  color: var(--c-white);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
 .userName {
   font-size: 14px;
   font-weight: 600;

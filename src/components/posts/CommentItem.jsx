@@ -141,6 +141,7 @@ export default function CommentItem({
           resource="comments"
           id={comment.id}
           initialLikes={comment.likes}
+          onChange={(likes) => onUpdate({ ...comment, likes })}
           disabled={disabled}
         />
         <Button

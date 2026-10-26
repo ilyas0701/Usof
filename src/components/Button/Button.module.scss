@@ -71,6 +71,19 @@
     }
   }
 
+  &.danger {
+    background-color: var(--c-red-500);
+    color: var(--c-white);
+
+    &:hover:not(.disabled):not(.loading) {
+      background-color: var(--c-red-600);
+    }
+
+    &:active:not(.disabled):not(.loading) {
+      background-color: var(--c-red-700);
+    }
+  }
+
   &.primaryBlack {
     background-color: var(--c-dark-blue-800);
     color: var(--c-white);

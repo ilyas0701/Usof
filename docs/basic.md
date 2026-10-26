@@ -16,7 +16,7 @@ The main page loads questions from the API, with recent questions first. Users c
 
 The question form supports a title, text, categories, active or inactive status, and image uploads. Categories can be created inside the form. Question pages show images, replies, and reactions. Authors can edit, lock, or delete their own content.
 
-Replies can refer to other comments. The interface groups them under their parent and limits visual indentation for deeper threads. Comments currently use date order; sorting by ascending like count is still unfinished.
+Replies can refer to other comments. The interface groups them under their parent and limits visual indentation for deeper threads. By default, comments at each level are sorted by ascending like count. Users can also choose most liked, newest, or oldest first. Replies stay under their parent when sorting changes.
 
 ## Application Flow
 

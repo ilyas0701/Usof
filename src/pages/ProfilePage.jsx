@@ -3,6 +3,7 @@ import { usersApi } from '../api/usersApi'
 import { useAuth } from '../hooks/useAuth'
 import useResource from '../hooks/useResource'
 import { validateImages } from '../utils/format'
+import { navigate } from '../utils/navigation'
 import PageLayout from '../components/common/PageLayout'
 import ResourceState from '../components/common/ResourceState'
 import Button from '../components/Button/Button'
@@ -122,7 +123,7 @@ function ProfileForm({ profile, onSaved }) {
 }
 
 export default function ProfilePage({ id }) {
-  const { user, token } = useAuth()
+  const { user, token, logoutUser } = useAuth()
   const [section, setSection] = useState(() => new URLSearchParams(window.location.search).get('tab') === 'posts' ? 'posts' : 'profile')
   const profile = useResource(
     useCallback((signal) => usersApi.get(id, signal), [id]),
@@ -169,10 +170,18 @@ export default function ProfilePage({ id }) {
               </div>
             </div>
             {isOwner && (
+              <>
               <p className={s.muted}>
                 {data.email} ·{' '}
                 {data.email_verified ? 'Email verified' : 'Email not verified'}
               </p>
+              <Button variant="danger" size="small" onClick={() => {
+                logoutUser()
+                navigate('/')
+              }}>
+                Log out
+              </Button>
+              </>
             )}
           </section>
           {isOwner && (
