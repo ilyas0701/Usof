@@ -18,6 +18,7 @@ router.get("/:id/categories", optionalAuthMiddleware, PostController.findCategor
 router.get("/:id/images", optionalAuthMiddleware, PostController.findImages);
 router.get("/:id/images/:imageId/file", optionalAuthMiddleware, PostController.findImageFile);
 router.post("/:id/images", authMiddleware, uploadPostImagesMiddleware, PostController.addImages);
+router.delete("/:id/images/:imageId", authMiddleware, PostController.deleteImage);
 router.get("/:id/like", optionalAuthMiddleware, PostController.findLikes);
 router.post("/", authMiddleware, PostController.create);
 router.post("/:id/like", authMiddleware, PostController.createLike);

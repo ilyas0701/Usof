@@ -1,6 +1,5 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import CrossIcon from '../icons/CrossIcon'
-import ChevronRightIcon from '../icons/ChevronRightIcon'
 import Button from '../Button/Button'
 import s from './FilterDrawer.module.scss'
 
@@ -11,9 +10,7 @@ export default function FilterDrawer({
   onTabChange,
   selectedTag,
   onTagSelect,
-  onAuthorSelect,
   popularTags = [],
-  topAuthors = [],
   onResetFilters,
   dateFrom,
   dateTo,
@@ -25,6 +22,8 @@ export default function FilterDrawer({
 }) {
   const drawerRef = useRef(null)
   const closeRef = useRef(null)
+  const [categorySearch, setCategorySearch] = useState('')
+  const matchingTags = popularTags.filter((tag) => tag.toLowerCase().includes(categorySearch.trim().replace(/^#/, '').toLowerCase()))
 
   useEffect(() => {
     if (!isOpen) return
@@ -121,8 +120,16 @@ export default function FilterDrawer({
           <div className={s.group}>
             <p className={s.groupLabel}>Categories</p>
             <div className={s.tagsCard}>
+              <input type="search" className={s.categorySearch} aria-label="Search categories" placeholder="Search categories..." value={categorySearch} onChange={(event) => setCategorySearch(event.target.value)} />
+              {selectedTag && (
+                <div className={s.selectedCategory}>
+                  <button type="button" className={`${s.tagPill} ${s.tagActive}`} aria-label={`Clear category ${selectedTag}`} onClick={() => onTagSelect?.(null)}>
+                    #{selectedTag} <span aria-hidden="true">×</span>
+                  </button>
+                </div>
+              )}
               <div className={s.tagsGrid}>
-                {popularTags.map((tag) => {
+                {matchingTags.map((tag) => {
                   const isSelected =
                     selectedTag?.toLowerCase() === tag.toLowerCase()
                   return (
@@ -130,6 +137,7 @@ export default function FilterDrawer({
                       key={tag}
                       type="button"
                       className={`${s.tagPill} ${isSelected ? s.tagActive : ''}`}
+                      aria-pressed={isSelected}
                       onClick={() => onTagSelect?.(isSelected ? null : tag)}
                     >
                       #{tag}
@@ -137,6 +145,7 @@ export default function FilterDrawer({
                   )
                 })}
               </div>
+              {!matchingTags.length && <p className={s.emptyCategories} role="status">No categories found.</p>}
             </div>
           </div>
 
@@ -175,48 +184,7 @@ export default function FilterDrawer({
               </label>
             </div>
           )}
-          <div className={s.group}>
-            <p className={s.groupLabel}>Top authors</p>
-            {!topAuthors.length && (
-              <p>
-                {isAuthenticated
-                  ? 'No authors available.'
-                  : 'Log in to browse authors.'}
-              </p>
-            )}
-            <div className={s.authorsList}>
-              {topAuthors.map((author) => {
-                return (
-                  <button
-                    key={author.name}
-                    type="button"
-                    className={s.authorCard}
-                    onClick={() => onAuthorSelect?.(author.id)}
-                  >
-                    <div className={s.authorLeft}>
-                      <div className={s.authorAvatar}>
-                        {author.name.charAt(0).toUpperCase()}
-                      </div>
-                      <div className={s.authorMeta}>
-                        <span className={s.authorName}>@{author.name}</span>
-                        <span className={s.authorRating}>
-                          {author.rating} reputation
-                        </span>
-                      </div>
-                    </div>
 
-                    <div className={s.authorRight}>
-                      <ChevronRightIcon
-                        width={18}
-                        height={18}
-                        className={s.chevronIcon}
-                      />
-                    </div>
-                  </button>
-                )
-              })}
-            </div>
-          </div>
         </div>
 
         <div className={s.footer}>

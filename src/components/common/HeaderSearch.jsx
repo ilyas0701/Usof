@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { postsApi } from '../../api/postsApi'
+import { questionPath } from '../../../shared/questionUrls'
 import { useAuth } from '../../hooks/useAuth'
 import { navigate } from '../../utils/navigation'
 import SearchIcon from '../icons/SearchIcon'
@@ -51,7 +52,7 @@ export default function HeaderSearch({ initialQuery = '' }) {
     setOpen(false)
     navigate(term ? `/?q=${encodeURIComponent(term)}` : '/')
   }
-  const select = (post) => { setOpen(false); navigate(`/posts/${post.id}`) }
+  const select = (post) => { setOpen(false); navigate(questionPath(post.id, post.title)) }
 
   return (
     <form ref={anchor} className={s.search} role="search" onSubmit={(event) => {

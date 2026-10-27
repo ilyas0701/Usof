@@ -9,6 +9,8 @@ export default function TextField({
   label,
   value = '',
   onChange,
+  onFocus,
+  onBlur,
   type = 'text',
   name,
   error,
@@ -47,8 +49,8 @@ export default function TextField({
           type={currentInputType}
           value={value}
           onChange={onChange}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
+          onFocus={(event) => { setIsFocused(true); onFocus?.(event) }}
+          onBlur={(event) => { setIsFocused(false); onBlur?.(event) }}
           disabled={disabled}
           autoComplete={autoComplete}
           required={required}

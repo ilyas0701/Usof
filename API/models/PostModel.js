@@ -205,6 +205,14 @@ class PostModel {
         return rows[0] ?? null;
     }
 
+    static async deleteImage(postId, imageId) {
+        const [result] = await pool.execute(
+            `DELETE FROM DbPostImage WHERE post_id = ? AND id = ?`,
+            [postId, imageId]
+        );
+        return result.affectedRows > 0;
+    }
+
     static async addImages(postId, paths) {
         const connection = await pool.getConnection();
 

@@ -141,6 +141,15 @@ class PostController {
         }
     }
 
+    static async deleteImage(req, res) {
+        try {
+            await PostService.deleteImage(req.params.id, req.params.imageId, req.user);
+            return res.status(204).send();
+        } catch (error) {
+            return sendErrorResponse(res, error);
+        }
+    }
+
     static async addImages(req, res) {
         try {
             const images = await PostService.addImages(req.params.id, req.user, req.files);

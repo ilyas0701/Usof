@@ -1,4 +1,5 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { questionIdFromPath, questionPath } from '../../shared/questionUrls'
 import { postsApi, commentsApi, reactionsApi } from '../api/postsApi'
 import { loadMembership } from '../api/postData'
 import { usersApi } from '../api/usersApi'
@@ -6,7 +7,7 @@ import { useAuth } from '../hooks/useAuth'
 import useResource from '../hooks/useResource'
 import usePostEvents from '../hooks/usePostEvents'
 import { followLink, navigate, openLogin } from '../utils/navigation'
-import { formatDate, validateImages } from '../utils/format'
+import { formatDate } from '../utils/format'
 import { commentThreads } from '../utils/commentThreads'
 import PageLayout from '../components/common/PageLayout'
 import ResourceState from '../components/common/ResourceState'
@@ -24,7 +25,6 @@ export default function PostPage({ id, commentId }) {
   const [replyTo, setReplyTo] = useState(null)
   const [commentSort, setCommentSort] = useState('likes-asc')
   const replyInputRef = useRef(null)
-  const [files, setFiles] = useState([])
   const [busy, setBusy] = useState('')
   const [error, setError] = useState('')
   const detail = useResource(
@@ -60,6 +60,14 @@ export default function PostPage({ id, commentId }) {
     ),
   )
   const postId = detail.data?.post.id
+  const postTitle = detail.data?.post.title
+  useEffect(() => {
+    if (!postId || questionIdFromPath(window.location.pathname) !== String(postId)) return
+    const canonical = questionPath(postId, postTitle)
+    if (window.location.pathname !== canonical) {
+      window.history.replaceState(window.history.state, '', canonical + window.location.search + window.location.hash)
+    }
+  }, [postId, postTitle])
   usePostEvents(postId, token, async (signal) => {
     try {
       const [post, comments, users] = await Promise.all([
@@ -133,20 +141,6 @@ export default function PostPage({ id, commentId }) {
       }))
       setContent('')
       setReplyTo(null)
-    })
-  }
-  const uploadImages = (event) => {
-    event.preventDefault()
-    const validation = files.length
-      ? validateImages(files)
-      : 'Choose at least one image.'
-    if (validation) return setError(validation)
-    const form = event.currentTarget
-    run('images', async () => {
-      const images = await postsApi.uploadImages(postId, files)
-      detail.setData((current) => ({ ...current, images }))
-      setFiles([])
-      form.reset()
     })
   }
   const data = detail.data
@@ -301,35 +295,6 @@ export default function PostPage({ id, commentId }) {
               </div>
             )}
           </article>
-          {isOwner && (
-            <form className={`${s.card} ${s.form}`} onSubmit={uploadImages}>
-              <label className={s.label}>
-                Add images
-                <span className={s.muted}>
-                  Up to 5 images, 5 MB each. JPEG, PNG, WebP or GIF.
-                </span>
-                <input
-                  className={s.file}
-                  type="file"
-                  multiple
-                  accept="image/jpeg,image/png,image/webp,image/gif"
-                  disabled={Boolean(busy)}
-                  onChange={(event) => setFiles(Array.from(event.target.files))}
-                />
-              </label>
-              <div className={s.actions}>
-                <Button
-                  type="submit"
-                  variant="secondary"
-                  size="small"
-                  loading={busy === 'images'}
-                  disabled={Boolean(busy) || !files.length}
-                >
-                  Upload images
-                </Button>
-              </div>
-            </form>
-          )}
           <section id="comments" className={s.card}>
             <h2 className={s.title}>Replies · {data.comments.length}</h2>
             <label className={s.label}>
@@ -452,3 +417,4 @@ export default function PostPage({ id, commentId }) {
     </PageLayout>
   )
 }
+

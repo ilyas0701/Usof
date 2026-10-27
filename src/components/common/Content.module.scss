@@ -122,6 +122,64 @@
   border: 1px solid var(--c-sea-blue-300);
   border-radius: var(--br-2);
 }
+.categorySearchRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  > :first-child { flex: 1; min-width: 0; }
+}
+.categorySearchField {
+  position: relative;
+  &:has(.categorySuggestions) .categoryInput > div:first-child {
+    border-radius: var(--br-2) var(--br-2) 0 0;
+    border-color: var(--c-sea-blue-500);
+    box-shadow: none;
+  }
+}
+.categorySearchField .categoryInput {
+  margin-bottom: 0;
+}
+.categorySuggestions {
+  position: absolute;
+  top: calc(100% - 1px);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  max-height: 280px;
+  overflow-y: auto;
+  background: var(--c-white);
+  box-shadow: 0 10px 30px rgba(19, 36, 48, 0.14);
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+  border: 1px solid var(--c-sea-blue-500);
+  border-top-color: var(--c-sea-blue-200);
+  border-radius: 0 0 var(--br-2) var(--br-2);
+  .muted { padding: 8px 12px; margin: 0; }
+}
+.categorySuggestion {
+  display: block;
+  width: 100%;
+  height: 44px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: var(--br-1);
+  background: transparent;
+  color: var(--c-dark-blue-800);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  &:hover, &:focus-visible { background: var(--c-sea-blue-100); }
+}
+.categorySuggestionsList {
+  max-height: 132px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
 .tag.createCategory {
   display: inline-flex;
   align-items: center;
@@ -251,6 +309,35 @@
 .file {
   font: var(--font-secondary);
   max-width: 100%;
+}
+.attachmentPreviews {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.previewGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 140px), 1fr));
+  gap: 12px;
+}
+.previewItem {
+  margin: 0;
+  min-width: 0;
+  img {
+    display: block;
+    width: 100%;
+    height: 120px;
+    object-fit: contain;
+    border: 1px solid var(--c-sea-blue-300);
+    border-radius: var(--br-1);
+    background: var(--c-sea-blue-100);
+  }
+  figcaption {
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--c-dark-blue-500);
+    overflow-wrap: anywhere;
+  }
 }
 .images {
   display: grid;

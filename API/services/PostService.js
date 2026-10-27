@@ -244,6 +244,22 @@ class PostService {
         return path.join(postImageDirectory, path.basename(image.image_path));
     }
 
+    static async deleteImage(id, imageId, user) {
+        const post = await this.findById(id, user);
+        if (String(post.author_id) !== String(user.userId) && user.role !== "admin") {
+            throw new HttpError(403, "You cannot delete images from this post");
+        }
+        const image = await PostModel.findImage(post.id, validId(imageId));
+        if (!image || !await PostModel.deleteImage(post.id, image.id)) {
+            throw new HttpError(404, "Image does not exist");
+        }
+        const filename = path.basename(image.image_path);
+        if (filename.startsWith("post-")) {
+            await unlink(path.join(postImageDirectory, filename)).catch(() => {});
+        }
+        publishPostEvent(post.id);
+    }
+
     static async addImages(id, user, files) {
         const post = await this.findById(id, user);
 

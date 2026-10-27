@@ -12,6 +12,7 @@ import PageLayout from './components/common/PageLayout'
 import Button from './components/Button/Button'
 import { navigate } from './utils/navigation'
 import SiteMenu from './components/common/SiteMenu'
+import { questionIdFromPath } from '../shared/questionUrls'
 
 function readLocation() {
   return {
@@ -86,8 +87,8 @@ function AppRoutes() {
   if (pathname === '/posts/new') return <PostEditorPage />
   let match = pathname.match(/^\/posts\/(\d+)\/edit$/)
   if (match) return <PostEditorPage key={pathname} id={match[1]} />
-  match = pathname.match(/^\/posts\/(\d+)$/)
-  if (match) return <PostPage key={pathname} id={match[1]} />
+  const questionId = questionIdFromPath(pathname)
+  if (questionId) return <PostPage key={questionId} id={questionId} />
   match = pathname.match(/^\/comments\/(\d+)$/)
   if (match) return <PostPage key={pathname} commentId={match[1]} />
   match = pathname.match(/^\/categories\/(\d+)$/)

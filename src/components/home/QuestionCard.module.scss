@@ -1,3 +1,18 @@
+.shareToast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1100;
+  max-width: calc(100vw - 32px);
+  padding: 12px 20px;
+  border-radius: 20px;
+  background: var(--c-dark-blue-800);
+  color: var(--c-white);
+  box-shadow: 0 4px 20px rgba(19, 36, 48, 0.2);
+  font-size: 14px;
+  pointer-events: none;
+}
 .threadCard {
   display: flex;
   gap: 14px;

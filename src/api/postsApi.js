@@ -16,6 +16,7 @@ export const postsApi = {
       body: { content, parent_id: parentId },
     }),
   images: (id, signal) => request(`/posts/${id}/images`, { signal }),
+  removeImage: (id, imageId) => request(`/posts/${id}/images/${imageId}`, { method: 'DELETE' }),
   image: (id, imageId, signal) =>
     request(`/posts/${id}/images/${imageId}/file`, {
       signal,

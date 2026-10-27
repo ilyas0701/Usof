@@ -1,4 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
+import { questionPath } from '../../../shared/questionUrls'
 import CommentIcon from '../icons/CommentIcon'
 import ShareIcon from '../icons/ShareIcon'
 import Reactions from '../common/Reactions'
@@ -11,7 +13,12 @@ export default function QuestionCard({ question, onTagClick }) {
   const { user, isAuthenticated } = useAuth()
   const [shareMessage, setShareMessage] = useState('')
   const [failedAvatar, setFailedAvatar] = useState(null)
-  const path = `/posts/${question.id}`
+  useEffect(() => {
+    if (!shareMessage) return
+    const timeout = window.setTimeout(() => setShareMessage(''), 2500)
+    return () => window.clearTimeout(timeout)
+  }, [shareMessage])
+  const path = questionPath(question.id, question.title)
   const author = question.author_login || 'removed'
   const handleAuthor = () => {
     if (!question.author_id) return
@@ -19,6 +26,7 @@ export default function QuestionCard({ question, onTagClick }) {
     navigate(`/users/${question.author_id}`)
   }
   const handleShare = async () => {
+    setShareMessage('')
     const url = new URL(path, window.location.origin).href
     try {
       if (navigator.share) await navigator.share({ title: question.title, url })
@@ -130,10 +138,10 @@ export default function QuestionCard({ question, onTagClick }) {
             <ShareIcon width={18} height={18} />
           </button>
         </div>
-        {shareMessage && (
-          <span className={s.timestamp} role="status">
+        {shareMessage && createPortal(
+          <div className={s.shareToast} role="status">
             {shareMessage}
-          </span>
+          </div>, document.body,
         )}
       </div>
     </article>

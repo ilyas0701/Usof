@@ -9,7 +9,6 @@ import s from './HomePage.module.scss'
 import { postsApi } from '../api/postsApi'
 import { loadPostCard } from '../api/postData'
 import { categoriesApi } from '../api/categoriesApi'
-import { usersApi } from '../api/usersApi'
 import useResource from '../hooks/useResource'
 import ResourceState from '../components/common/ResourceState'
 import Pagination from '../components/common/Pagination'
@@ -30,12 +29,6 @@ export default function HomePage({ onOpenAuth }) {
   const [debouncedQuery, setDebouncedQuery] = useState('')
   const categories = useResource(
     useCallback((signal) => categoriesApi.list(signal), []),
-  )
-  const authors = useResource(
-    useCallback(
-      (signal) => (token ? usersApi.list(signal) : Promise.resolve([])),
-      [token],
-    ),
   )
   useEffect(() => {
     const timeout = window.setTimeout(
@@ -346,15 +339,6 @@ export default function HomePage({ onOpenAuth }) {
         selectedTag={selectedTag}
         onTagSelect={changeFilter(setSelectedTag)}
         popularTags={(categories.data || []).map((category) => category.title)}
-        topAuthors={[...(authors.data || [])]
-          .sort((a, b) => b.rating - a.rating)
-          .slice(0, 5)
-          .map((author) => ({
-            id: author.id,
-            name: author.login,
-            rating: author.rating,
-          }))}
-        onAuthorSelect={(id) => navigate(`/users/${id}`)}
         dateFrom={dateFrom}
         dateTo={dateTo}
         onDateFromChange={changeFilter(setDateFrom)}

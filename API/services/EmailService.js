@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer";
 import { appConfig } from "../config/app.js";
 import { emailConfig } from "../config/email.js";
+import { questionPath } from "../../shared/questionUrls.js";
 
 const transporter = nodemailer.createTransport({
     host: emailConfig.host,
@@ -19,8 +20,8 @@ class EmailService {
             post_deleted: "A post you follow was deleted"
         };
         const message = events[type];
-        const baseUrl = (appConfig.appUrl ?? `http://localhost:${appConfig.port}`).replace(/\/$/, "");
-        const link = `${baseUrl}/api/posts/${post.id}`;
+        const baseUrl = (appConfig.frontendUrl || appConfig.appUrl || `http://localhost:${appConfig.port}`).replace(/\/$/, "");
+        const link = `${baseUrl}${questionPath(post.id, post.title)}`;
         const text = type === "post_deleted"
             ? `${message}: ${post.title}`
             : `${message}: ${post.title}\nOpen the post: ${link}`;
