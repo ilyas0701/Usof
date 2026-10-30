@@ -191,7 +191,7 @@ export default function PostPage({ id, commentId }) {
                     followLink(event, `/categories/${category.id}`)
                   }
                 >
-                  #{category.title}
+                  {category.title}
                 </a>
               ))}
             </div>

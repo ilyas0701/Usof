@@ -131,7 +131,7 @@ export default function FilterDrawer({
               {selectedTags.length > 0 && (
                 <div className={s.selectedCategory}>
                   {selectedTags.map((tag) => <button key={tag} type="button" className={`${s.tagPill} ${s.tagActive}`} aria-label={`Clear category ${tag}`} onClick={() => onTagSelect?.(tag)}>
-                    #{tag} <span aria-hidden="true">×</span>
+                    {tag} <span aria-hidden="true">×</span>
                   </button>)}
                 </div>
               )}
@@ -147,7 +147,7 @@ export default function FilterDrawer({
                       aria-pressed={isSelected}
                       onClick={() => onTagSelect?.(tag)}
                     >
-                      #{tag}
+                      {tag}
                     </button>
                   )
                 })}

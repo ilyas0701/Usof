@@ -19,10 +19,8 @@ function PostForm({ post, categories, selectedCategories, images = [] }) {
   const [savedImages, setSavedImages] = useState(images)
   const [removedImages, setRemovedImages] = useState([])
   const fileInput = useRef(null)
-  const [availableCategories, setAvailableCategories] = useState(categories)
+  const availableCategories = categories
   const [categoryTitle, setCategoryTitle] = useState('')
-  const [categoryOpen, setCategoryOpen] = useState(false)
-  const [categoryError, setCategoryError] = useState('')
   const [title, setTitle] = useState(post?.title || '')
   const [content, setContent] = useState(post?.content || '')
   const [status, setStatus] = useState(post?.status || 'active')
@@ -33,21 +31,6 @@ function PostForm({ post, categories, selectedCategories, images = [] }) {
   const [savedId, setSavedId] = useState(post?.id)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
-
-  const createCategory = () => {
-    if (busy) return
-    const name = categoryTitle.trim()
-    if (!name) return setCategoryError('Enter a category name.')
-    const existing = availableCategories.find(
-      (category) => category.title.toLowerCase() === name.toLowerCase(),
-    )
-    const category = existing || { id: `draft-${crypto.randomUUID()}`, title: name, pending: true }
-    if (!existing) setAvailableCategories((current) => [...current, category])
-    setSelected((current) => current.includes(category.id) ? current : [...current, category.id])
-    setCategoryTitle('')
-    setCategoryError('')
-    setCategoryOpen(false)
-  }
 
   const handleSubmit = async (event) => {
     event.preventDefault()
@@ -64,30 +47,10 @@ function PostForm({ post, categories, selectedCategories, images = [] }) {
     let id = savedId
     let saved = false
     try {
-      const categoryIds = []
-      const pending = selected.some((categoryId) => availableCategories.find((category) => category.id === categoryId)?.pending)
-      const latest = pending ? await categoriesApi.list() : []
-      for (const categoryId of selected) {
-        const category = availableCategories.find((item) => item.id === categoryId)
-        if (!category?.pending) { categoryIds.push(categoryId); continue }
-        let resolved = latest.find((item) => item.title.toLowerCase() === category.title.toLowerCase())
-        if (!resolved) {
-          try {
-            resolved = await categoriesApi.create({ title: category.title, description: null })
-          } catch (error) {
-            if (error.status !== 409) throw error
-            resolved = (await categoriesApi.list()).find((item) => item.title.toLowerCase() === category.title.toLowerCase())
-            if (!resolved) throw error
-          }
-        }
-        categoryIds.push(resolved.id)
-        setAvailableCategories((current) => [...current.filter((item) => item.id !== categoryId && item.id !== resolved.id), resolved])
-        setSelected((current) => [...new Set(current.map((item) => item === categoryId ? resolved.id : item))])
-      }
       const body = {
         title: title.trim(),
         content: content.trim(),
-        categories: [...new Set(categoryIds)],
+        categories: [...new Set(selected)],
         status,
       }
       const result = id
@@ -137,50 +100,41 @@ function PostForm({ post, categories, selectedCategories, images = [] }) {
       <fieldset className={s.fieldset} disabled={busy}>
         <legend>Categories</legend>
         <div className={s.categorySearchRow}>
-          <div className={s.categorySearchField} onBlur={(event) => {
-            if (!event.currentTarget.contains(event.relatedTarget)) setCategoryOpen(false)
-          }}>
+          <div className={s.categorySearchField}>
           <TextField
-            label="Search or add a category"
+            label="Search categories"
             className={s.categoryInput}
             value={categoryTitle}
             maxLength={255}
             autoComplete="off"
             disabled={busy}
-            onFocus={() => setCategoryOpen(true)}
-            onChange={(event) => { setCategoryTitle(event.target.value); setCategoryError(''); setCategoryOpen(true) }}
+            onChange={(event) => setCategoryTitle(event.target.value)}
             onKeyDown={(event) => {
-              if (event.key === 'Escape') { event.preventDefault(); setCategoryOpen(false) }
-              if (event.key === 'Enter') { event.preventDefault(); createCategory() }
+              if (event.key === 'Enter') event.preventDefault()
             }}
           />
-        {categoryOpen && categoryTitle.trim() && (
-          <div className={s.categorySuggestions}>
-            <div className={s.categorySuggestionsList}>
-            {availableCategories.filter((category) => !selected.includes(category.id) && category.title.toLowerCase().includes(categoryTitle.trim().toLowerCase())).map((category) => (
-              <button type="button" className={s.categorySuggestion} key={category.id} onClick={() => {
+          <div className={s.categoryTagChoices}>
+            <div className={s.tags}>
+            {availableCategories.filter((category) => !selected.includes(category.id) && category.title.toLowerCase().includes(categoryTitle.trim().toLowerCase())).sort((a, b) => Number(b.id) - Number(a.id)).slice(0, 30).map((category) => (
+              <button type="button" className={s.tag} key={category.id} onClick={() => {
                 setSelected((current) => current.includes(category.id) ? current : [...current, category.id])
                 setCategoryTitle('')
-                setCategoryError('')
-              }}>#{category.title}</button>
+              }}>{category.title}</button>
             ))}
             </div>
-            {!availableCategories.some((category) => category.title.toLowerCase() === categoryTitle.trim().toLowerCase()) && (
-              <p className={s.muted}>Press Enter or Add to select “{categoryTitle.trim()}”.</p>
+            {!availableCategories.some((category) => !selected.includes(category.id) && category.title.toLowerCase().includes(categoryTitle.trim().toLowerCase())) && (
+              <p className={s.muted}>No matching categories.</p>
             )}
           </div>
-        )}
           </div>
-          <Button variant="secondary" size="small" disabled={!categoryTitle.trim() || busy} onClick={createCategory}>Add</Button>
         </div>
         {selected.length > 0 && <div className={s.tags}>
           {availableCategories.filter((category) => selected.includes(category.id)).map((category) => (
-            <button type="button" key={category.id} className={s.tag} aria-label={`Remove category ${category.title}`} onClick={() => setSelected((current) => current.filter((id) => id !== category.id))}>
-              #{category.title} <span aria-hidden="true">×</span>
+            <button type="button" key={category.id} className={s.tag} aria-pressed="true" aria-label={`Remove category ${category.title}`} onClick={() => setSelected((current) => current.filter((id) => id !== category.id))}>
+              {category.title} <span aria-hidden="true">×</span>
             </button>
           ))}
         </div>}
-        {categoryError && <InformationMessage type="error" description={categoryError} />}
       </fieldset>
       <label className={s.label}>
         Status

@@ -88,6 +88,19 @@
   margin: 0 auto;
   padding: 40px 20px 80px;
 }
+.centeredMain {
+  min-height: calc(100svh - 240px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+  text-align: center;
+  .heading { justify-content: center; }
+  @media (max-width: 768px) {
+    min-height: calc(100svh - 280px);
+  }
+}
 .heading {
   display: flex;
   justify-content: space-between;
@@ -169,6 +182,9 @@
 }
 .categorySearchField {
   position: relative;
+  .categoryInput > div:first-child {
+    background-color: var(--c-white);
+  }
   &:has(.categorySuggestions) .categoryInput > div:first-child {
     border-radius: var(--br-2) var(--br-2) 0 0;
     border-color: var(--c-sea-blue-500);
@@ -186,13 +202,13 @@
   z-index: 20;
   max-height: 280px;
   overflow-y: auto;
-  background: var(--c-white);
+  background: var(--c-sea-blue-100);
   box-shadow: 0 10px 30px rgba(19, 36, 48, 0.14);
   display: flex;
   flex-direction: column;
   padding: 6px;
   border: 1px solid var(--c-sea-blue-500);
-  border-top-color: var(--c-sea-blue-200);
+  border-top-color: transparent;
   border-radius: 0 0 var(--br-2) var(--br-2);
   .muted { padding: 8px 12px; margin: 0; }
 }
@@ -211,7 +227,16 @@
   font: inherit;
   text-align: left;
   cursor: pointer;
-  &:hover, &:focus-visible { background: var(--c-sea-blue-100); }
+  &:hover, &:focus-visible { background: var(--c-sea-blue-200); }
+}
+.categoryTagChoices {
+  margin-top: 12px;
+  .tag {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    text-align: left;
+    &:hover { background: var(--c-sea-blue-200); }
+  }
 }
 .categorySuggestionsList {
   max-height: 132px;

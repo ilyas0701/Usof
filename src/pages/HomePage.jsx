@@ -16,15 +16,38 @@ import { navigate } from '../utils/navigation'
 import AccountMenu from '../components/common/AccountMenu'
 import HeaderSearch from '../components/common/HeaderSearch'
 
+const FILTERS_KEY = 'usof_question_filters'
+
+function readFilters() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(FILTERS_KEY)) || {}
+    return {
+      selectedTags: Array.isArray(saved.selectedTags) ? saved.selectedTags.filter((tag) => typeof tag === 'string') : [],
+      activeTab: ['all', 'popular', 'disliked'].includes(saved.activeTab) ? saved.activeTab : 'all',
+      dateFrom: /^\d{4}-\d{2}-\d{2}$/.test(saved.dateFrom) ? saved.dateFrom : '',
+      dateTo: /^\d{4}-\d{2}-\d{2}$/.test(saved.dateTo) ? saved.dateTo : '',
+      status: saved.status === 'inactive' ? 'inactive' : 'active',
+    }
+  } catch {
+    return {}
+  }
+}
+
 export default function HomePage({ onOpenAuth }) {
   const { isAuthenticated, token } = useAuth()
   const searchQuery = new URLSearchParams(window.location.search).get('q') || ''
-  const [selectedTags, setSelectedTags] = useState([])
-  const [activeTab, setActiveTab] = useState('all')
+  const [savedFilters] = useState(readFilters)
+  const [selectedTags, setSelectedTags] = useState(savedFilters.selectedTags || [])
+  const [activeTab, setActiveTab] = useState(savedFilters.activeTab || 'all')
   const [page, setPage] = useState(1)
-  const [dateFrom, setDateFrom] = useState('')
-  const [dateTo, setDateTo] = useState('')
-  const [status, setStatus] = useState('active')
+  const [dateFrom, setDateFrom] = useState(savedFilters.dateFrom || '')
+  const [dateTo, setDateTo] = useState(savedFilters.dateTo || '')
+  const [status, setStatus] = useState(savedFilters.status || 'active')
+  useEffect(() => {
+    try {
+      localStorage.setItem(FILTERS_KEY, JSON.stringify({ selectedTags, activeTab, dateFrom, dateTo, status }))
+    } catch { /* Filtering still works when browser storage is unavailable. */ }
+  }, [selectedTags, activeTab, dateFrom, dateTo, status])
   const visibleStatus = isAuthenticated ? status : 'active'
   const [debouncedQuery, setDebouncedQuery] = useState('')
   const categories = useResource(
@@ -250,7 +273,7 @@ export default function HomePage({ onOpenAuth }) {
 
                     {selectedTags.map((tag) => (
                       <span className={s.activeFilterChip} key={tag}>
-                        <span>#{tag}</span>
+                        <span>{tag}</span>
                         <button
                           type="button"
                           className={s.chipRemoveBtn}
@@ -300,7 +323,6 @@ export default function HomePage({ onOpenAuth }) {
                       key={question.id}
                       question={question}
                       onTagClick={toggleTag}
-                      onChange={feed.reload}
                     />
                   ))
                 ) : (

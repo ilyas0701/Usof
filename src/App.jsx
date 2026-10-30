@@ -8,6 +8,7 @@ import PostEditorPage from './pages/PostEditorPage'
 import PostListPage from './pages/PostListPage'
 import ProfilePage from './pages/ProfilePage'
 import DirectoryPage from './pages/DirectoryPage'
+import CategoryManagementPage from './pages/CategoryManagementPage'
 import PageLayout from './components/common/PageLayout'
 import Button from './components/Button/Button'
 import { navigate } from './utils/navigation'
@@ -54,6 +55,7 @@ function AppRoutes() {
     isReset
   const protectedPage =
     pathname === '/posts/new' ||
+    pathname === '/manage/categories' ||
     /^\/posts\/\d+\/edit$/.test(pathname) ||
     pathname.startsWith('/users') ||
     ['/favorites', '/subscriptions'].includes(pathname)
@@ -85,6 +87,7 @@ function AppRoutes() {
   }
   if (pathname === '/') return <HomePage key={search} onOpenAuth={openAuth} />
   if (pathname === '/posts/new') return <PostEditorPage />
+  if (pathname === '/manage/categories') return <CategoryManagementPage />
   let match = pathname.match(/^\/posts\/(\d+)\/edit$/)
   if (match) return <PostEditorPage key={pathname} id={match[1]} />
   const questionId = questionIdFromPath(pathname)
@@ -99,7 +102,7 @@ function AppRoutes() {
   if (pathname === '/favorites' || pathname === '/subscriptions')
     return <PostListPage key={pathname} collection={pathname.slice(1)} />
   return (
-    <PageLayout title="Page not found">
+    <PageLayout title="Page not found" centered showBack={false}>
       <Button variant="secondary" onClick={backHome}>
         Back to home
       </Button>

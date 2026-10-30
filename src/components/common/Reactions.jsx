@@ -19,12 +19,12 @@ export default function Reactions({
     source: initialLikes,
     likes: initialLikes,
   })
-  const likes = state.source === initialLikes ? state.likes : initialLikes
+  const [busy, setBusy] = useState(false)
+  const likes = busy || state.source === initialLikes ? state.likes : initialLikes
   const setLikes = (likes) => {
     setState({ source: initialLikes, likes })
     onChange?.(likes)
   }
-  const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const ownReaction = likes.find(
     (like) => String(like.author_id) === String(user?.userId),
@@ -35,6 +35,13 @@ export default function Reactions({
     if (busy) return
     setBusy(true)
     setError('')
+    const previousLikes = likes
+    const nextLikes = likes.filter(
+      (like) => String(like.author_id) !== String(user.userId),
+    )
+    if (ownReaction !== type)
+      nextLikes.push({ author_id: user.userId, type })
+    setState({ source: initialLikes, likes: nextLikes })
     try {
       if (ownReaction) await reactionsApi.remove(resource, id)
       if (ownReaction !== type) await reactionsApi.add(resource, id, type)
@@ -43,7 +50,9 @@ export default function Reactions({
       setError(err.message)
       try {
         setLikes(await reactionsApi.list(resource, id))
-      } catch {}
+      } catch {
+        setLikes(previousLikes)
+      }
     } finally {
       setBusy(false)
     }

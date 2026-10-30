@@ -9,7 +9,7 @@ const router = Router();
 router.get("/", CategoryController.findAll);
 router.get("/:id", CategoryController.findById);
 router.get("/:id/posts", optionalAuthMiddleware, CategoryController.findPosts);
-router.post("/", authMiddleware, CategoryController.create);
+router.post("/", authMiddleware, adminMiddleware, CategoryController.create);
 router.patch("/:id", authMiddleware, adminMiddleware, CategoryController.update);
 router.delete("/:id", authMiddleware, adminMiddleware, CategoryController.delete);
 

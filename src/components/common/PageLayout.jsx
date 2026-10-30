@@ -5,7 +5,7 @@ import AccountMenu from './AccountMenu'
 import HeaderSearch from './HeaderSearch'
 import s from './Content.module.scss'
 
-export default function PageLayout({ title, children, actions }) {
+export default function PageLayout({ title, children, actions, centered = false, showBack = true }) {
   const { isAuthenticated } = useAuth()
   return (
     <div className={s.page}>
@@ -27,17 +27,17 @@ export default function PageLayout({ title, children, actions }) {
       </header>
       <div className={s.yellowBackdrop} aria-hidden="true" />
       <div className={s.contentSurface}>
-        <main className={s.main}>
+        <main className={`${s.main} ${centered ? s.centeredMain : ''}`}>
           <div className={s.heading}>
             <div className={s.pageTitle}>
               <h1>{title}</h1>
             </div>
-            <div className={s.headingActions}>
+            {(actions || showBack) && <div className={s.headingActions}>
               {actions}
-              <button type="button" className={s.backButton} onClick={goBack} aria-label="Go back" title="Back">
+              {showBack && <button type="button" className={s.backButton} onClick={goBack} aria-label="Go back" title="Back">
                 Back
-              </button>
-            </div>
+              </button>}
+            </div>}
           </div>
           {children}
         </main>

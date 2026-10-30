@@ -57,7 +57,7 @@ export default function ProfileQuestions({ authorId, isOwner }) {
       {questions.data && (
         <>
           <div>
-            {questions.data.posts.map((question) => <QuestionCard key={question.id} question={question} onChange={questions.reload} />)}
+            {questions.data.posts.map((question) => <QuestionCard key={question.id} question={question} />)}
             {!questions.data.posts.length && (
               <p className={s.muted}>{isOwner ? 'You have no questions with this status yet.' : 'This user has no published questions yet.'}</p>
             )}

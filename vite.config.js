@@ -11,10 +11,6 @@ export default defineConfig(({ mode }) => {
   const apiTarget = apiEnv.APP_URL || `http://localhost:${apiEnv.PORT || 3000}`
 
   const proxy = {
-    '/admin': {
-      target: apiTarget,
-      changeOrigin: true,
-    },
     '/uploads': {
       target: apiTarget,
       changeOrigin: true,

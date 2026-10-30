@@ -60,7 +60,7 @@ export default function SiteMenu() {
           <div className={drawer.body}>
             <nav className={s.links} aria-label="Main navigation">
               {links.map(([label, href]) => <a key={href} href={href} className={s.item} onClick={(event) => followLink(event, href)}>{label}<span aria-hidden="true">›</span></a>)}
-              {user?.role === 'admin' && <a href="/admin" className={s.item}>Admin panel<span aria-hidden="true">›</span></a>}
+              {user?.role === 'admin' && <a href="/manage/categories" className={s.item} onClick={(event) => followLink(event, '/manage/categories')}>Manage categories<span aria-hidden="true">›</span></a>}
             </nav>
             <button type="button" className={s.item} onClick={() => { close(); if (isAuthenticated) logoutUser(); else openLogin() }}>{isAuthenticated ? 'Log out' : 'Log in'}</button>
           </div>

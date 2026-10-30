@@ -106,7 +106,7 @@ export default function QuestionCard({ question, onTagClick, onChange }) {
                   : navigate(`/categories/${category.id}`)
               }
             >
-              #{category.title}
+              {category.title}
             </button>
           ))}
         </div>

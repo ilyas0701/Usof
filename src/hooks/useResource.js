@@ -9,6 +9,7 @@ export default function useResource(load, sessionKey = '') {
     error: '',
   })
   const [revision, setRevision] = useState(0)
+  const [background, setBackground] = useState(false)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -37,11 +38,20 @@ export default function useResource(load, sessionKey = '') {
     state.source === load &&
     state.revision === revision &&
     state.sessionKey === sessionKey
+  const retainData =
+    background && state.source === load && state.sessionKey === sessionKey && state.data !== null
   return {
-    data: current ? state.data : null,
-    loading: !current,
+    data: current || retainData ? state.data : null,
+    loading: !current && !retainData,
     error: current ? state.error : '',
-    reload: () => setRevision((value) => value + 1),
+    reload: () => {
+      setBackground(false)
+      setRevision((value) => value + 1)
+    },
+    refresh: () => {
+      setBackground(true)
+      setRevision((value) => value + 1)
+    },
     setData: (update) =>
       setState((current) => ({
         ...current,
