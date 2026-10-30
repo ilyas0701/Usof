@@ -1,8 +1,18 @@
 export function navigate(path, replace = false) {
   const url = new URL(path, window.location.origin)
   if (!path.startsWith('/') || url.origin !== window.location.origin) path = '/'
-  window.history[replace ? 'replaceState' : 'pushState'](null, '', path)
+  const state = window.history.state || {}
+  const index = Number.isSafeInteger(state.usofIndex) ? state.usofIndex : 0
+  if (!replace && !Number.isSafeInteger(state.usofIndex)) {
+    window.history.replaceState({ ...state, usofIndex: index }, '')
+  }
+  window.history[replace ? 'replaceState' : 'pushState']({ ...state, usofIndex: replace ? index : index + 1 }, '', path)
   window.dispatchEvent(new PopStateEvent('popstate'))
+}
+
+export function goBack() {
+  if (window.history.state?.usofIndex > 0) window.history.back()
+  else navigate('/', true)
 }
 
 export function openLogin() {

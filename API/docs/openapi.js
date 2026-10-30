@@ -65,6 +65,7 @@ function add(method, path, tag, summary, options = {}) {
 }
 
 const postQuery = [
+    query("categories", {type: "string"}, "Comma-separated category IDs. Matches any selected category, up to 100 IDs."),
     query("author", integer, "Filter posts by author ID. Visibility rules still apply."),
     query("page", {...integer, default: 1}),
     query("pageSize", {...integer, maximum: 100, default: 10}),

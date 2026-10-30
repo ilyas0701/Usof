@@ -19,7 +19,7 @@ import HeaderSearch from '../components/common/HeaderSearch'
 export default function HomePage({ onOpenAuth }) {
   const { isAuthenticated, token } = useAuth()
   const searchQuery = new URLSearchParams(window.location.search).get('q') || ''
-  const [selectedTag, setSelectedTag] = useState(null)
+  const [selectedTags, setSelectedTags] = useState([])
   const [activeTab, setActiveTab] = useState('all')
   const [page, setPage] = useState(1)
   const [dateFrom, setDateFrom] = useState('')
@@ -41,9 +41,7 @@ export default function HomePage({ onOpenAuth }) {
     useCallback(
       async (signal) => {
         if (!categories.data) return { posts: [], total: 0 }
-        const category = categories.data.find(
-          (item) => item.title === selectedTag,
-        )
+        const categoryIds = categories.data.filter((item) => selectedTags.includes(item.title)).map((item) => item.id)
         const params = {
           page,
           pageSize: 10,
@@ -54,16 +52,12 @@ export default function HomePage({ onOpenAuth }) {
                 ? 'relevance'
                 : 'date',
           q: debouncedQuery || undefined,
+          categories: categoryIds.length ? categoryIds.join(',') : undefined,
           dateFrom,
           dateTo,
           status: visibleStatus,
         }
-        const result = category
-          ? await categoriesApi.posts(category.id, params, signal)
-          : await (debouncedQuery ? postsApi.search : postsApi.list)(
-              params,
-              signal,
-            )
+        const result = await (debouncedQuery ? postsApi.search : postsApi.list)(params, signal)
         const posts = await Promise.all(
           result.posts.map((post) => loadPostCard(post, signal)),
         )
@@ -72,7 +66,7 @@ export default function HomePage({ onOpenAuth }) {
       [
         categories.data,
         debouncedQuery,
-        selectedTag,
+        selectedTags,
         activeTab,
         page,
         dateFrom,
@@ -84,6 +78,10 @@ export default function HomePage({ onOpenAuth }) {
   )
   const changeFilter = (setter) => (value) => {
     setter(value)
+    setPage(1)
+  }
+  const toggleTag = (tag) => {
+    setSelectedTags((current) => current.includes(tag) ? current.filter((item) => item !== tag) : [...current, tag])
     setPage(1)
   }
   const filteredQuestions = feed.data?.posts || []
@@ -123,7 +121,7 @@ export default function HomePage({ onOpenAuth }) {
 
   const activeFilterCount =
     (activeTab !== 'all' ? 1 : 0) +
-    (selectedTag ? 1 : 0) +
+    selectedTags.length +
     (dateFrom ? 1 : 0) +
     (dateTo ? 1 : 0) +
     (visibleStatus !== 'active' ? 1 : 0)
@@ -132,7 +130,7 @@ export default function HomePage({ onOpenAuth }) {
 
   const handleResetFilters = () => {
     setActiveTab('all')
-    setSelectedTag(null)
+    setSelectedTags([])
     setDateFrom('')
     setDateTo('')
     setStatus('active')
@@ -248,19 +246,19 @@ export default function HomePage({ onOpenAuth }) {
                       </span>
                     )}
 
-                    {selectedTag && (
-                      <span className={s.activeFilterChip}>
-                        <span>#{selectedTag}</span>
+                    {selectedTags.map((tag) => (
+                      <span className={s.activeFilterChip} key={tag}>
+                        <span>#{tag}</span>
                         <button
                           type="button"
                           className={s.chipRemoveBtn}
-                          onClick={() => changeFilter(setSelectedTag)(null)}
+                          onClick={() => toggleTag(tag)}
                           aria-label="Remove tag filter"
                         >
                           <CrossIcon width={10} height={10} />
                         </button>
                       </span>
-                    )}
+                    ))}
 
                     {(dateFrom || dateTo || visibleStatus !== 'active') && (
                       <span className={s.activeFilterChip}>
@@ -299,7 +297,7 @@ export default function HomePage({ onOpenAuth }) {
                     <QuestionCard
                       key={question.id}
                       question={question}
-                      onTagClick={changeFilter(setSelectedTag)}
+                      onTagClick={toggleTag}
                     />
                   ))
                 ) : (
@@ -336,8 +334,8 @@ export default function HomePage({ onOpenAuth }) {
         onClose={closeFilters}
         activeTab={activeTab}
         onTabChange={changeFilter(setActiveTab)}
-        selectedTag={selectedTag}
-        onTagSelect={changeFilter(setSelectedTag)}
+        selectedTags={selectedTags}
+        onTagSelect={toggleTag}
         popularTags={(categories.data || []).map((category) => category.title)}
         dateFrom={dateFrom}
         dateTo={dateTo}

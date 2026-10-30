@@ -100,6 +100,35 @@
     overflow-wrap: anywhere;
   }
 }
+.pageTitle {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+.backButton {
+  display: grid;
+  place-items: center;
+  flex: none;
+  min-width: 76px;
+  height: 40px;
+  padding: 0 18px;
+  border: 1px solid var(--c-sea-blue-300);
+  border-radius: var(--br-3);
+  background: var(--c-white);
+  color: var(--c-dark-blue-800);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  &:hover { background: var(--c-yellow-400); border-color: var(--c-yellow-400); }
+  &:focus-visible { outline: 2px solid var(--c-sea-blue-500); outline-offset: 2px; }
+}
+.headingActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
 .card {
   background: var(--c-white);
   border-radius: var(--br-3);
@@ -111,6 +140,15 @@
   display: flex;
   flex-direction: column;
   gap: 18px;
+}
+.replySort {
+  margin-bottom: 24px;
+}
+.replyForm {
+  margin-bottom: 28px;
+}
+.inlineReplyForm {
+  margin-top: 20px;
 }
 .categoryCreator {
   display: flex;
@@ -353,10 +391,56 @@
   }
 }
 .comment {
-  margin-inline-start: calc(var(--reply-depth, 0) * var(--space-m));
+  --thread-step: 28px;
+  position: relative;
   border-top: 1px solid var(--c-sea-blue-200);
-  padding: 24px 0;
+  padding: 24px 0 24px calc((var(--reply-depth, 0) + 1) * var(--thread-step));
   scroll-margin-top: 20px;
+  .text { overflow-wrap: anywhere; }
+  @media (max-width: 576px) { --thread-step: 16px; }
+}
+.nestedComment {
+  border-top: 0;
+}
+.threadLine {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc((var(--line-level) + 1) * var(--thread-step) - 12px);
+  width: 0;
+  border-left: 2px solid var(--c-sea-blue-300);
+  pointer-events: none;
+}
+.threadLineEnd {
+  bottom: auto;
+  height: 34px;
+}
+.threadStem {
+  position: absolute;
+  top: 48px;
+  bottom: 0;
+  left: calc((var(--reply-depth, 0) + 1) * var(--thread-step) - 12px);
+  border-left: 2px solid var(--c-sea-blue-300);
+  pointer-events: none;
+}
+.threadElbow.threadLineEnd {
+  width: calc(var(--thread-step) + 4px);
+  border-bottom: 2px solid var(--c-sea-blue-300);
+  border-bottom-left-radius: 14px;
+}
+.threadElbow.threadLineEnd::after {
+  display: none;
+}
+.threadElbow::after {
+  content: '';
+  position: absolute;
+  top: 24px;
+  left: -2px;
+  width: calc(var(--thread-step) + 4px);
+  height: 10px;
+  border-left: 2px solid var(--c-sea-blue-300);
+  border-bottom: 2px solid var(--c-sea-blue-300);
+  border-bottom-left-radius: 14px;
 }
 
 .replyContext {

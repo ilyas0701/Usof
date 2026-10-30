@@ -7,6 +7,7 @@ import ResetPasswordForm from './ResetPasswordForm'
 import UserProfileCard from './UserProfileCard'
 import VerifyEmail from './VerifyEmail'
 import { useAuth } from '../../hooks/useAuth'
+import { goBack } from '../../utils/navigation'
 import s from './AuthPage.module.scss'
 
 export default function AuthPage({
@@ -40,9 +41,9 @@ export default function AuthPage({
             <button
               type="button"
               className={s.homeBackLink}
-              onClick={onNavigateHome}
+              onClick={goBack}
             >
-              Back to Home
+              Back
             </button>
           )}
         </div>

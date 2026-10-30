@@ -10,7 +10,7 @@
   background: var(--c-header-gradient);
   display: flex;
   flex-direction: column;
-  min-height: 80vh;
+  min-height: 60vh;
   position: sticky;
   top: 0;
   z-index: 0;
@@ -18,7 +18,7 @@
   padding-bottom: 90px;
 
   @media (max-width: 768px) {
-    min-height: 70vh;
+    min-height: 60vh;
     padding-top: 62px;
     padding-bottom: 60px;
   }

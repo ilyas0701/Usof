@@ -180,9 +180,6 @@ function PostForm({ post, categories, selectedCategories, images = [] }) {
             </button>
           ))}
         </div>}
-        {availableCategories.some((category) => category.pending && selected.includes(category.id)) && (
-          <p className={s.muted}>New categories will be created when you {post ? 'save changes' : 'publish the question'}.</p>
-        )}
         {categoryError && <InformationMessage type="error" description={categoryError} />}
       </fieldset>
       <label className={s.label}>

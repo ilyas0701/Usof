@@ -1,7 +1,7 @@
-import { useState } from 'react'
-import { commentsApi } from '../../api/postsApi'
+import { useEffect, useRef, useState } from 'react'
+import { commentsApi, postsApi } from '../../api/postsApi'
 import { useAuth } from '../../hooks/useAuth'
-import { followLink } from '../../utils/navigation'
+import { followLink, openLogin } from '../../utils/navigation'
 import { formatDate } from '../../utils/format'
 import Reactions from '../common/Reactions'
 import DeleteButton from '../common/DeleteButton'
@@ -13,10 +13,9 @@ export default function CommentItem({
   comment,
   author,
   post,
-  parent,
-  parentAuthor,
   depth = 0,
-  onReply,
+  nextDepth = 0,
+  onReplyCreated,
   onUpdate,
   onDelete,
 }) {
@@ -25,6 +24,28 @@ export default function CommentItem({
   const [content, setContent] = useState(comment.content)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const [replying, setReplying] = useState(false)
+  const [replyContent, setReplyContent] = useState('')
+  const replyInput = useRef(null)
+  useEffect(() => {
+    if (replying) replyInput.current?.focus({ preventScroll: true })
+  }, [replying])
+  const submitReply = async (event) => {
+    event.preventDefault()
+    if (busy || disabled || !replyContent.trim()) return
+    setBusy(true)
+    setError('')
+    try {
+      const reply = await postsApi.comment(post.id, replyContent.trim(), comment.id)
+      onReplyCreated(reply)
+      setReplyContent('')
+      setReplying(false)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setBusy(false)
+    }
+  }
   const isOwner = String(user?.userId) === String(comment.author_id)
   const disabled =
     user?.role !== 'admin' &&
@@ -52,9 +73,18 @@ export default function CommentItem({
   return (
     <article
       id={`comment-${comment.id}`}
-      className={s.comment}
-      style={{ '--reply-depth': Math.min(depth, 2) }}
+      className={`${s.comment} ${depth > 0 ? s.nestedComment : ''}`}
+      style={{ '--reply-depth': Math.min(depth, 4) }}
     >
+      {nextDepth > depth && <span className={s.threadStem} aria-hidden="true" />}
+      {Array.from({ length: Math.min(depth, 4) }, (_, index) => (
+        <span
+          key={index}
+          aria-hidden="true"
+          className={`${s.threadLine} ${index === Math.min(depth, 4) - 1 ? s.threadElbow : ''} ${index >= Math.min(nextDepth, 4) ? s.threadLineEnd : ''}`}
+          style={{ '--line-level': index }}
+        />
+      ))}
       <div className={s.meta}>
         {isAuthenticated && comment.author_id ? (
           <a
@@ -79,21 +109,6 @@ export default function CommentItem({
         {Boolean(comment.is_locked) && <span>Locked</span>}
         {comment.status === 'inactive' && <span>Inactive</span>}
       </div>
-      {parent && (
-        <a href={`#comment-${parent.id}`} className={s.replyContext}>
-          <span className={s.muted}>
-            In reply to{' '}
-            {parentAuthor
-              ? `@${parentAuthor.login}`
-              : `User #${parent.author_id}`}
-          </span>
-          <span>
-            {parent.content.length > 140
-              ? `${parent.content.slice(0, 140)}…`
-              : parent.content}
-          </span>
-        </a>
-      )}
       {error && <InformationMessage type="error" description={error} />}
       {editing ? (
         <form
@@ -148,7 +163,12 @@ export default function CommentItem({
           variant="additional"
           size="small"
           disabled={busy || disabled}
-          onClick={() => onReply(comment)}
+          aria-expanded={replying}
+          onClick={() => {
+            if (!isAuthenticated) return openLogin()
+            setEditing(false)
+            setReplying((current) => !current)
+          }}
         >
           Reply
         </Button>
@@ -160,6 +180,7 @@ export default function CommentItem({
               disabled={busy}
               onClick={() => {
                 setContent(comment.content)
+                setReplying(false)
                 setEditing(true)
               }}
             >
@@ -183,6 +204,27 @@ export default function CommentItem({
           </>
         )}
       </div>
+      {replying && (
+        <form className={`${s.form} ${s.inlineReplyForm}`} onSubmit={submitReply}>
+          <label className={s.label}>
+            Your reply
+            <textarea
+              ref={replyInput}
+              className={`${s.textarea} ${s.smallTextarea}`}
+              value={replyContent}
+              onChange={(event) => setReplyContent(event.target.value)}
+              required
+              maxLength={65535}
+              disabled={busy || disabled}
+            />
+          </label>
+          <div className={s.actions}>
+            <Button type="submit" variant="primary-black" size="small" loading={busy} disabled={disabled || !replyContent.trim()}>Send reply</Button>
+            <Button variant="secondary" size="small" disabled={busy} onClick={() => setReplying(false)}>Cancel</Button>
+          </div>
+          {disabled && <p className={s.muted}>This comment is closed for new replies.</p>}
+        </form>
+      )}
     </article>
   )
 }

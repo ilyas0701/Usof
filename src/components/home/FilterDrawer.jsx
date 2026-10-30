@@ -8,7 +8,7 @@ export default function FilterDrawer({
   onClose,
   activeTab,
   onTabChange,
-  selectedTag,
+  selectedTags = [],
   onTagSelect,
   popularTags = [],
   onResetFilters,
@@ -67,7 +67,7 @@ export default function FilterDrawer({
 
   const hasActiveFilters =
     activeTab !== 'all' ||
-    Boolean(selectedTag) ||
+    selectedTags.length > 0 ||
     Boolean(dateFrom) ||
     Boolean(dateTo) ||
     status !== 'active'
@@ -121,24 +121,24 @@ export default function FilterDrawer({
             <p className={s.groupLabel}>Categories</p>
             <div className={s.tagsCard}>
               <input type="search" className={s.categorySearch} aria-label="Search categories" placeholder="Search categories..." value={categorySearch} onChange={(event) => setCategorySearch(event.target.value)} />
-              {selectedTag && (
+              {selectedTags.length > 0 && (
                 <div className={s.selectedCategory}>
-                  <button type="button" className={`${s.tagPill} ${s.tagActive}`} aria-label={`Clear category ${selectedTag}`} onClick={() => onTagSelect?.(null)}>
-                    #{selectedTag} <span aria-hidden="true">×</span>
-                  </button>
+                  {selectedTags.map((tag) => <button key={tag} type="button" className={`${s.tagPill} ${s.tagActive}`} aria-label={`Clear category ${tag}`} onClick={() => onTagSelect?.(tag)}>
+                    #{tag} <span aria-hidden="true">×</span>
+                  </button>)}
                 </div>
               )}
               <div className={s.tagsGrid}>
                 {matchingTags.map((tag) => {
                   const isSelected =
-                    selectedTag?.toLowerCase() === tag.toLowerCase()
+                    selectedTags.some((selected) => selected.toLowerCase() === tag.toLowerCase())
                   return (
                     <button
                       key={tag}
                       type="button"
                       className={`${s.tagPill} ${isSelected ? s.tagActive : ''}`}
                       aria-pressed={isSelected}
-                      onClick={() => onTagSelect?.(isSelected ? null : tag)}
+                      onClick={() => onTagSelect?.(tag)}
                     >
                       #{tag}
                     </button>

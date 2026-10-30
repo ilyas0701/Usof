@@ -129,20 +129,26 @@
   }
 
   &.disabled {
-    color: var(--c-dark-blue-300);
+    color: var(--c-dark-blue-600);
 
     &.primary {
       background-color: var(--c-dark-blue-100);
-      color: var(--c-dark-blue-300);
+      color: var(--c-dark-blue-600);
     }
 
     &.secondary {
       border-color: var(--c-dark-blue-200);
-      color: var(--c-dark-blue-300);
+      color: var(--c-dark-blue-600);
     }
 
     &.primaryBlack {
-      background-color: var(--c-dark-blue-300);
+      background-color: var(--c-dark-blue-200);
+      color: var(--c-dark-blue-600);
+    }
+
+    &.danger {
+      background-color: var(--c-red-200);
+      color: var(--c-red-800);
     }
   }
 }

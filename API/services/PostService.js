@@ -185,6 +185,13 @@ class PostService {
         }
 
         const categoryId = query.category === undefined ? null : validId(query.category);
+        let categoryIds = [];
+        if (query.categories !== undefined) {
+            if (typeof query.categories !== "string" || !query.categories.trim() || query.categories.split(',').length > 100) {
+                throw new HttpError(400, "Categories must contain up to 100 category IDs");
+            }
+            categoryIds = [...new Set(query.categories.split(',').map(value => validId(value.trim())))];
+        }
         const authorId = query.author === undefined ? null : validId(query.author);
         const dateFrom = validDate(query.dateFrom, "dateFrom");
         const dateTo = validDate(query.dateTo, "dateTo");
@@ -198,6 +205,7 @@ class PostService {
             pageSize,
             sort,
             categoryId,
+            categoryIds,
             authorId,
             dateFrom: dateFrom ? `${dateFrom} 00:00:00` : null,
             dateTo: dateTo ? `${dateTo} 23:59:59` : null,

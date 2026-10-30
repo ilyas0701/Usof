@@ -95,7 +95,7 @@ class PostModel {
         return result.affectedRows > 0;
     }
 
-    static async findAll({page, pageSize, sort, categoryId, authorId, dateFrom, dateTo, status, search, user}) {
+    static async findAll({page, pageSize, sort, categoryId, categoryIds = [], authorId, dateFrom, dateTo, status, search, user}) {
         const conditions = [];
         const values = [];
 
@@ -119,6 +119,10 @@ class PostModel {
         if (categoryId) {
             conditions.push("EXISTS (SELECT 1 FROM DbPostCategory pc WHERE pc.post_id = p.id AND pc.category_id = ?)");
             values.push(categoryId);
+        }
+        if (categoryIds.length) {
+            conditions.push(`EXISTS (SELECT 1 FROM DbPostCategory pc WHERE pc.post_id = p.id AND pc.category_id IN (${categoryIds.map(() => '?').join(', ')}))`);
+            values.push(...categoryIds);
         }
 
         if (dateFrom) {

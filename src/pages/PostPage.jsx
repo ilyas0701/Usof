@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { questionIdFromPath, questionPath } from '../../shared/questionUrls'
 import { postsApi, commentsApi, reactionsApi } from '../api/postsApi'
 import { loadMembership } from '../api/postData'
@@ -22,9 +22,7 @@ import s from '../components/common/Content.module.scss'
 export default function PostPage({ id, commentId }) {
   const { user, token, isAuthenticated } = useAuth()
   const [content, setContent] = useState('')
-  const [replyTo, setReplyTo] = useState(null)
   const [commentSort, setCommentSort] = useState('likes-asc')
-  const replyInputRef = useRef(null)
   const [busy, setBusy] = useState('')
   const [error, setError] = useState('')
   const detail = useResource(
@@ -132,7 +130,7 @@ export default function PostPage({ id, commentId }) {
   const submitComment = (event) => {
     event.preventDefault()
     run('comment', async () => {
-      const comment = await postsApi.comment(postId, content.trim(), replyTo)
+      const comment = await postsApi.comment(postId, content.trim())
       detail.setData((current) => ({
         ...current,
         comments: current.comments.some((item) => item.id === comment.id)
@@ -140,24 +138,11 @@ export default function PostPage({ id, commentId }) {
           : [...current.comments, { ...comment, likes: [] }],
       }))
       setContent('')
-      setReplyTo(null)
     })
   }
   const data = detail.data
   const usersById = new Map(
     data?.users.map((author) => [String(author.id), author]),
-  )
-  const replyTarget = data?.comments.find(
-    (comment) => String(comment.id) === String(replyTo),
-  )
-  const replyUnavailable =
-    replyTo != null &&
-    (!replyTarget ||
-      (user?.role !== 'admin' &&
-        (replyTarget.is_locked || replyTarget.status !== 'active')))
-  const replyAuthor = usersById.get(String(replyTarget?.author_id))
-  const commentsById = new Map(
-    data?.comments.map((comment) => [String(comment.id), comment]),
   )
   const isOwner = data && String(user?.userId) === String(data.post.author_id)
   const canInteract =
@@ -296,8 +281,8 @@ export default function PostPage({ id, commentId }) {
             )}
           </article>
           <section id="comments" className={s.card}>
-            <h2 className={s.title}>Replies · {data.comments.length}</h2>
-            <label className={s.label}>
+            <h2 className={s.title}>Replies - {data.comments.length}</h2>
+            <label className={`${s.label} ${s.replySort}`}>
               Sort replies
               <select className={s.select} value={commentSort} onChange={(event) => setCommentSort(event.target.value)}>
                 <option value="likes-asc">Fewest likes first</option>
@@ -308,35 +293,10 @@ export default function PostPage({ id, commentId }) {
             </label>
             {canInteract ? (
               isAuthenticated ? (
-                <form className={s.form} onSubmit={submitComment}>
-                  {replyTo != null && (
-                    <div className={s.replyContext}>
-                      <div className={s.actions}>
-                        <span className={s.muted}>
-                          {replyUnavailable
-                            ? 'This comment is no longer available for replies.'
-                            : `Replying to ${replyAuthor ? `@${replyAuthor.login}` : `User #${replyTarget.author_id}`}`}
-                        </span>
-                        <Button
-                          variant="additional"
-                          size="small"
-                          onClick={() => setReplyTo(null)}
-                        >
-                          Cancel reply
-                        </Button>
-                      </div>
-                      {replyTarget && (
-                        <span>
-                          {replyTarget.content.slice(0, 140)}
-                          {replyTarget.content.length > 140 ? '…' : ''}
-                        </span>
-                      )}
-                    </div>
-                  )}
+                <form className={`${s.form} ${s.replyForm}`} onSubmit={submitComment}>
                   <label className={s.label}>
                     Your reply
                     <textarea
-                      ref={replyInputRef}
                       className={`${s.textarea} ${s.smallTextarea}`}
                       value={content}
                       onChange={(event) => setContent(event.target.value)}
@@ -351,14 +311,14 @@ export default function PostPage({ id, commentId }) {
                       variant="primary-black"
                       size="small"
                       loading={busy === 'comment'}
-                      disabled={Boolean(busy) || replyUnavailable}
+                      disabled={Boolean(busy) || !content.trim()}
                     >
-                      {replyTo != null ? 'Send reply' : 'Post reply'}
+                      Post reply
                     </Button>
                   </div>
                 </form>
               ) : (
-                <Button variant="secondary" size="small" onClick={openLogin}>
+                <Button variant="secondary" size="small" className={s.replyForm} onClick={openLogin}>
                   Log in to reply
                 </Button>
               )
@@ -367,23 +327,18 @@ export default function PostPage({ id, commentId }) {
                 This question is closed for new replies and reactions.
               </p>
             )}
-            {commentThreads(data.comments, commentSort).map(({ comment, depth }) => (
+            {commentThreads(data.comments, commentSort).map(({ comment, depth }, index, threads) => (
               <CommentItem
                 key={comment.id}
                 comment={comment}
                 depth={depth}
-                parent={commentsById.get(String(comment.parent_id))}
-                parentAuthor={usersById.get(
-                  String(
-                    commentsById.get(String(comment.parent_id))?.author_id,
-                  ),
-                )}
-                onReply={(target) => {
-                  if (!isAuthenticated) return openLogin()
-                  setReplyTo(target.id)
-                  replyInputRef.current?.focus({ preventScroll: true })
-                  replyInputRef.current?.scrollIntoView({ block: 'center' })
-                }}
+                nextDepth={threads[index + 1]?.depth || 0}
+                onReplyCreated={(reply) => detail.setData((current) => ({
+                  ...current,
+                  comments: current.comments.some((item) => String(item.id) === String(reply.id))
+                    ? current.comments
+                    : [...current.comments, { ...reply, likes: [] }],
+                }))}
                 post={data.post}
                 author={usersById.get(String(comment.author_id))}
                 onUpdate={(updated) =>
@@ -408,9 +363,6 @@ export default function PostPage({ id, commentId }) {
                 }
               />
             ))}
-            {!data.comments.length && (
-              <p className={s.muted}>Be the first to reply.</p>
-            )}
           </section>
         </>
       )}

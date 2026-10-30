@@ -1,5 +1,5 @@
 import { useAuth } from '../../hooks/useAuth'
-import { followLink, navigate, openLogin } from '../../utils/navigation'
+import { followLink, goBack, navigate, openLogin } from '../../utils/navigation'
 import Button from '../Button/Button'
 import AccountMenu from './AccountMenu'
 import HeaderSearch from './HeaderSearch'
@@ -29,8 +29,15 @@ export default function PageLayout({ title, children, actions }) {
       <div className={s.contentSurface}>
         <main className={s.main}>
           <div className={s.heading}>
-            <h1>{title}</h1>
-            {actions}
+            <div className={s.pageTitle}>
+              <h1>{title}</h1>
+            </div>
+            <div className={s.headingActions}>
+              {actions}
+              <button type="button" className={s.backButton} onClick={goBack} aria-label="Go back" title="Back">
+                Back
+              </button>
+            </div>
           </div>
           {children}
         </main>
