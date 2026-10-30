@@ -114,6 +114,13 @@ export default function FilterDrawer({
               >
                 Popular
               </button>
+              <button
+                type="button"
+                className={`${s.tabButton} ${activeTab === 'disliked' ? s.tabActive : ''}`}
+                onClick={() => onTabChange?.('disliked')}
+              >
+                Disliked
+              </button>
             </div>
           </div>
 

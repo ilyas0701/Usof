@@ -48,6 +48,8 @@ export default function HomePage({ onOpenAuth }) {
           sort:
             activeTab === 'popular'
               ? 'likes'
+              : activeTab === 'disliked'
+                ? 'dislikes'
               : debouncedQuery
                 ? 'relevance'
                 : 'date',
@@ -233,7 +235,7 @@ export default function HomePage({ onOpenAuth }) {
                     {activeTab !== 'all' && (
                       <span className={s.activeFilterChip}>
                         <span>
-                          {activeTab === 'popular' ? 'Popular' : 'Unanswered'}
+                          {activeTab === 'popular' ? 'Popular' : 'Disliked'}
                         </span>
                         <button
                           type="button"
@@ -298,6 +300,7 @@ export default function HomePage({ onOpenAuth }) {
                       key={question.id}
                       question={question}
                       onTagClick={toggleTag}
+                      onChange={feed.reload}
                     />
                   ))
                 ) : (

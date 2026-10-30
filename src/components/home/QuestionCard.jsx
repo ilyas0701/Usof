@@ -9,7 +9,7 @@ import { followLink, navigate, openLogin } from '../../utils/navigation'
 import { formatDate } from '../../utils/format'
 import s from './QuestionCard.module.scss'
 
-export default function QuestionCard({ question, onTagClick }) {
+export default function QuestionCard({ question, onTagClick, onChange }) {
   const { user, isAuthenticated } = useAuth()
   const [shareMessage, setShareMessage] = useState('')
   const [failedAvatar, setFailedAvatar] = useState(null)
@@ -115,6 +115,7 @@ export default function QuestionCard({ question, onTagClick }) {
             resource="posts"
             id={question.id}
             initialLikes={question.likes}
+            onChange={onChange}
             disabled={
               user?.role !== 'admin' &&
               (Boolean(question.is_locked) || question.status !== 'active')

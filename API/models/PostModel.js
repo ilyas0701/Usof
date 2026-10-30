@@ -143,7 +143,8 @@ class PostModel {
         const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
         const order = sort === "relevance"
             ? "CASE WHEN LOWER(p.title) = LOWER(?) THEN 0 WHEN INSTR(LOWER(p.title), LOWER(?)) > 0 THEN 1 ELSE 2 END, like_count DESC, p.id DESC"
-            : sort === "date" ? "p.publish_date DESC, p.id DESC" : "like_count DESC, p.id DESC";
+            : sort === "date" ? "p.publish_date DESC, p.id DESC"
+                : sort === "dislikes" ? "dislike_count DESC, p.publish_date DESC, p.id DESC" : "like_count DESC, p.id DESC";
         const orderValues = sort === "relevance" ? [search, search] : [];
         const [countRows] = await pool.execute(
             `SELECT COUNT(*) AS total FROM DbPost p ${where}`,
@@ -152,7 +153,8 @@ class PostModel {
         const [rows] = await pool.execute(
             `SELECT p.id, p.author_id, COALESCE(u.login, 'removed') AS author_login, u.profile_picture AS author_avatar,
                 p.title, p.publish_date, p.status, p.is_locked, p.content,
-                (SELECT COUNT(*) FROM DbLike l WHERE l.post_id = p.id AND l.type = 'like') AS like_count
+                (SELECT COUNT(*) FROM DbLike l WHERE l.post_id = p.id AND l.type = 'like') AS like_count,
+                (SELECT COUNT(*) FROM DbLike l WHERE l.post_id = p.id AND l.type = 'dislike') AS dislike_count
              FROM DbPost p
              LEFT JOIN DbUser u ON u.id = p.author_id
              ${where}

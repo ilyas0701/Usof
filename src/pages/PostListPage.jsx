@@ -75,7 +75,7 @@ export default function PostListPage({ collection, categoryId }) {
         <div className={s.card}>
           {list.data.posts.length ? (
             list.data.posts.map((post) => (
-              <QuestionCard key={post.id} question={post} />
+              <QuestionCard key={post.id} question={post} onChange={list.reload} />
             ))
           ) : (
             <p className={s.muted}>No questions here yet.</p>

@@ -38,8 +38,9 @@ export default function SiteMenu() {
       if (previousFocus?.isConnected) previousFocus.focus({ preventScroll: true })
     }
   }, [open, close])
-  const links = [['Questions', '/'], ['Ask a question', '/posts/new']]
+  const links = [['Questions', '/']]
   if (isAuthenticated) links.push(
+    ['Ask a question', '/posts/new'],
     ['My profile', `/users/${user.userId}`],
     ['My posts', `/users/${user.userId}?tab=posts`],
     ['Favorites', '/favorites'], ['Following', '/subscriptions'],

@@ -170,8 +170,8 @@ class PostService {
 
         const sort = query.sort ?? (search ? "relevance" : "likes");
 
-        if (!["likes", "date", "relevance"].includes(sort) || (sort === "relevance" && !search)) {
-            throw new HttpError(400, "Sort must be likes, date or relevance with a search query");
+        if (!["likes", "dislikes", "date", "relevance"].includes(sort) || (sort === "relevance" && !search)) {
+            throw new HttpError(400, "Sort must be likes, dislikes, date or relevance with a search query");
         }
 
         const status = query.status;
