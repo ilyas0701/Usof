@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 
 export default function FloatingAccountPanel({ anchorRef, children }) {
   const [position, setPosition] = useState(null)
+
   useLayoutEffect(() => {
     const update = () => {
       const rect = anchorRef.current?.getBoundingClientRect()

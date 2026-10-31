@@ -13,6 +13,7 @@ export default function QuestionCard({ question, onTagClick, onChange }) {
   const { user, isAuthenticated } = useAuth()
   const [shareMessage, setShareMessage] = useState('')
   const [failedAvatar, setFailedAvatar] = useState(null)
+
   useEffect(() => {
     if (!shareMessage) return
     const timeout = window.setTimeout(() => setShareMessage(''), 2500)
@@ -20,11 +21,13 @@ export default function QuestionCard({ question, onTagClick, onChange }) {
   }, [shareMessage])
   const path = questionPath(question.id, question.title)
   const author = question.author_login || 'removed'
+
   const handleAuthor = () => {
     if (!question.author_id) return
     if (!isAuthenticated) return openLogin()
     navigate(`/users/${question.author_id}`)
   }
+
   const handleShare = async () => {
     setShareMessage('')
     const url = new URL(path, window.location.origin).href

@@ -12,6 +12,7 @@ export default function SiteMenu() {
   const panel = useRef(null)
   const closeButton = useRef(null)
   const close = useCallback(() => setOpen(false), [])
+
   useEffect(() => {
     if (!open) return
     const previousFocus = document.activeElement

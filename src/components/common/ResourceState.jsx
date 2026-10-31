@@ -12,6 +12,7 @@ export default function ResourceState({ loading, error, onRetry }) {
       </div>
     )
   if (!error) return null
+
   return (
     <div className={s.state}>
       <InformationMessage type="error" description={error} />

@@ -28,9 +28,11 @@ export default function CommentItem({
   const [replying, setReplying] = useState(false)
   const [replyContent, setReplyContent] = useState('')
   const replyInput = useRef(null)
+
   useEffect(() => {
     if (replying) replyInput.current?.focus({ preventScroll: true })
   }, [replying])
+
   const submitReply = async (event) => {
     event.preventDefault()
     if (busy || disabled || !replyContent.trim()) return

@@ -27,14 +27,17 @@ function readLocation() {
 function AppRoutes() {
   const [location, setLocation] = useState(readLocation)
   const { isAuthenticated, user } = useAuth()
+
   useLayoutEffect(() => {
     const previous = window.history.scrollRestoration
     window.history.scrollRestoration = 'manual'
     return () => { window.history.scrollRestoration = previous }
   }, [])
+
   useLayoutEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
   }, [location])
+
   useEffect(() => {
     const update = () => setLocation(readLocation())
     window.addEventListener('popstate', update)
@@ -107,6 +110,7 @@ function AppRoutes() {
   if (pathname === '/users') return <DirectoryPage key={pathname} />
   if (pathname === '/favorites' || pathname === '/subscriptions')
     return <PostListPage key={pathname} collection={pathname.slice(1)} />
+
   return (
     <PageLayout title="Page not found" centered showBack={false}>
       <Button variant="secondary" onClick={backHome}>

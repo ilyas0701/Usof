@@ -4,6 +4,7 @@ import s from './Content.module.scss'
 export default function Pagination({ page, total, pageSize = 10, onChange }) {
   const pages = Math.max(1, Math.ceil(Number(total) / pageSize))
   if (pages <= 1 && page === 1) return null
+
   return (
     <nav className={s.pagination} aria-label="Pagination">
       <Button

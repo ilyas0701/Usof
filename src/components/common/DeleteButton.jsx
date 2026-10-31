@@ -8,6 +8,7 @@ export default function DeleteButton({ label, onDelete }) {
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+
   const handleDelete = async () => {
     setBusy(true)
     setError('')
@@ -20,6 +21,7 @@ export default function DeleteButton({ label, onDelete }) {
       setBusy(false)
     }
   }
+
   return (
     <>
       <Button

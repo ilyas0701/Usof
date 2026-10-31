@@ -8,6 +8,7 @@ export default function PostImage({ postId, image, index }) {
   const source = `${postId}/${image.id}/${token}`
   const [state, setState] = useState({ source: '', url: '', error: '' })
   const [revision, setRevision] = useState(0)
+
   useEffect(() => {
     const controller = new AbortController()
     let url
@@ -35,6 +36,7 @@ export default function PostImage({ postId, image, index }) {
         onRetry={() => setRevision((value) => value + 1)}
       />
     )
+
   return (
     <a href={state.url} target="_blank" rel="noreferrer">
       <img src={state.url} alt={`Post attachment ${index + 1}`} />

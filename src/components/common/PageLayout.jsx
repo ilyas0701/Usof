@@ -7,6 +7,7 @@ import s from './Content.module.scss'
 
 export default function PageLayout({ title, children, actions, centered = false, showBack = true }) {
   const { isAuthenticated } = useAuth()
+
   return (
     <div className={s.page}>
       <header className={s.header}>
