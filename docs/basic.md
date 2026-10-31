@@ -8,7 +8,7 @@ The frontend uses React and Vite. SCSS files define shared colors, fonts, spacin
 
 The application has registration, email verification, login, logout, and password reset forms. The access token and user data are stored in local storage. Protected requests include the token. An expired token or an unauthorized response clears the session.
 
-Users can view profiles and edit their own login, full name, email, and avatar. My posts loads questions by author and provides date or like sorting, pagination, and a status filter.
+Users can view profiles and edit their own login, full name, email, and avatar. My posts loads questions by author and provides date or like sorting, pagination, and searchable category buttons with multiple selection. Changing a selection resets pagination to the first page; removing all selections clears the filter.
 
 ## Questions and Comments
 

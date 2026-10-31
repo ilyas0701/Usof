@@ -5,6 +5,7 @@ import s from './FilterDrawer.module.scss'
 
 export default function FilterDrawer({
   isOpen,
+  inline = false,
   onClose,
   activeTab,
   onTabChange,
@@ -26,7 +27,7 @@ export default function FilterDrawer({
   const matchingTags = popularTags.filter((tag) => tag.toLowerCase().includes(categorySearch.trim().replace(/^#/, '').toLowerCase()))
 
   useEffect(() => {
-    if (!isOpen) return
+    if (!isOpen || inline) return
 
     const previouslyFocused = document.activeElement
     const previousOverflow = document.body.style.overflow
@@ -61,9 +62,9 @@ export default function FilterDrawer({
       document.body.style.overflow = previousOverflow
       if (previouslyFocused?.isConnected) previouslyFocused.focus()
     }
-  }, [isOpen, onClose])
+  }, [isOpen, onClose, inline])
 
-  if (!isOpen) return null
+  if (!isOpen && !inline) return null
 
   const hasActiveFilters =
     activeTab !== 'all' ||
@@ -74,18 +75,18 @@ export default function FilterDrawer({
 
   return (
     <>
-      <div className={s.backdrop} onClick={onClose} aria-hidden="true" />
+      {!inline && <div className={s.backdrop} onClick={onClose} aria-hidden="true" />}
 
       <aside
         ref={drawerRef}
-        className={s.drawer}
-        role="dialog"
-        aria-modal="true"
+        className={inline ? s.sidebar : s.drawer}
+        role={inline ? undefined : "dialog"}
+        aria-modal={inline ? undefined : true}
         aria-label="Filter panel"
       >
         <div className={s.header}>
           <h2 className={s.title}>Filters</h2>
-          <button
+          {!inline && <button
             type="button"
             ref={closeRef}
             className={s.closeButton}
@@ -93,7 +94,7 @@ export default function FilterDrawer({
             aria-label="Close"
           >
             <CrossIcon width={20} height={20} fill="currentColor" />
-          </button>
+          </button>}
         </div>
 
         <div className={s.body}>
@@ -205,14 +206,14 @@ export default function FilterDrawer({
               Reset
             </Button>
           )}
-          <Button
+          {!inline && <Button
             variant="primary"
             size="small"
             onClick={onClose}
             className={s.applyBtn}
           >
             Apply
-          </Button>
+          </Button>}
         </div>
       </aside>
     </>

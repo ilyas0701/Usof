@@ -1,3 +1,20 @@
+.sidebar {
+  background: var(--c-white);
+  border-radius: 32px;
+  padding: 24px;
+
+  .header { padding: 0 0 24px; }
+  .title { font-size: 24px; }
+  .body { padding: 0; overflow: visible; gap: 18px; }
+  .groupLabel { text-align: left; }
+  .tagsCard { padding: 0; box-shadow: none; }
+  .tabsCard { padding: 0; box-shadow: none; flex-wrap: wrap; }
+  .dateLabel { margin: 6px 0; }
+  .dateLabel input, .dateLabel select { min-width: 0; width: 100%; }
+  .footer { padding: 16px 0 0; background: transparent; }
+  .footer:empty { display: none; }
+}
+
 .backdrop {
   position: fixed;
   inset: 0;

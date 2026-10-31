@@ -309,6 +309,38 @@
   gap: 12px;
 }
 
+.filterSidebar {
+  min-width: 0;
+}
+
+.feedMain {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+
+@media (min-width: 1024px) {
+  .feedLayout {
+    max-width: none;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 380px;
+    align-items: start;
+    gap: 24px;
+  }
+  .feedControls:has(> :only-child) { display: none; }
+  .feedControls .searchAndFilterRow { display: none; }
+  .filterSidebar {
+    grid-column: 2;
+    grid-row: 1;
+    position: sticky;
+    top: 100px;
+    max-height: calc(100dvh - 120px);
+    overflow-y: auto;
+    border-radius: 32px;
+  }
+}
+
 .searchAndFilterRow {
   display: flex;
   align-items: center;

@@ -18,6 +18,14 @@ import HeaderSearch from '../components/common/HeaderSearch'
 
 export default function HomePage({ onOpenAuth }) {
   const { isAuthenticated } = useAuth()
+  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false)
+  const [desktopFilters, setDesktopFilters] = useState(() => window.matchMedia('(min-width: 1024px)').matches)
+  useEffect(() => {
+    const media = window.matchMedia('(min-width: 1024px)')
+    const update = () => { setDesktopFilters(media.matches); setIsFilterDrawerOpen(false) }
+    media.addEventListener('change', update)
+    return () => media.removeEventListener('change', update)
+  }, [])
   const searchQuery = new URLSearchParams(window.location.search).get('q') || ''
   const dispatch = useDispatch()
   const { selectedTags, activeTab, dateFrom, dateTo, status } = useSelector((state) => state.filters)
@@ -51,7 +59,6 @@ export default function HomePage({ onOpenAuth }) {
     setPage(1)
   }
   const filteredQuestions = feed.data?.posts || []
-  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false)
   const closeFilters = useCallback(() => setIsFilterDrawerOpen(false), [])
   const [headerState, setHeaderState] = useState('normal')
   const headerRef = useRef(null)
@@ -168,6 +175,7 @@ export default function HomePage({ onOpenAuth }) {
       <section ref={curvedSectionRef} className={s.curvedContainer}>
         <div className={s.curvedInner}>
           <div id="questions" className={s.feedLayout}>
+            <div className={s.feedMain}>
             <div className={s.feedControls}>
               <div className={s.searchAndFilterRow}>
 
@@ -287,11 +295,10 @@ export default function HomePage({ onOpenAuth }) {
                 />
               )}
             </div>
-          </div>
-        </div>
-      </section>
-
+            </div>
+            <div className={s.filterSidebar}>
       <FilterDrawer
+        inline={desktopFilters}
         isOpen={isFilterDrawerOpen}
         onClose={closeFilters}
         activeTab={activeTab}
@@ -308,6 +315,12 @@ export default function HomePage({ onOpenAuth }) {
         isAuthenticated={isAuthenticated}
         onResetFilters={handleResetFilters}
       />
+            </div>
+          </div>
+        </div>
+      </section>
+
+
     </div>
   )
 }
