@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { useDispatch } from 'react-redux'
+import { updateCachedReactions } from '../../store/reactions'
 import { reactionsApi } from '../../api/postsApi'
 import { useAuth } from '../../hooks/useAuth'
 import { openLogin } from '../../utils/navigation'
@@ -15,6 +17,7 @@ export default function Reactions({
   onChange,
 }) {
   const { user, isAuthenticated } = useAuth()
+  const dispatch = useDispatch()
   const [state, setState] = useState({
     source: initialLikes,
     likes: initialLikes,
@@ -23,6 +26,7 @@ export default function Reactions({
   const likes = busy || state.source === initialLikes ? state.likes : initialLikes
   const setLikes = (likes) => {
     setState({ source: initialLikes, likes })
+    dispatch(updateCachedReactions(resource, id, likes))
     onChange?.(likes)
   }
   const [error, setError] = useState('')

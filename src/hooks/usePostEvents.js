@@ -7,6 +7,7 @@ export default function usePostEvents(postId, token, onChange) {
     if (!postId) return
     const controller = new AbortController()
     let retry
+    let connected = false
 
     const connect = async () => {
       let reader
@@ -39,12 +40,11 @@ export default function usePostEvents(postId, token, onChange) {
           while ((boundary = buffer.indexOf('\n\n')) !== -1) {
             const event = buffer.slice(0, boundary)
             buffer = buffer.slice(boundary + 2)
-            if (
-              event.startsWith('event: ready\n') ||
-              event.startsWith('event: comments-changed\n')
-            ) {
+            const ready = event.startsWith('event: ready\n')
+            if ((ready && connected) || event.startsWith('event: comments-changed\n')) {
               await refresh(controller.signal)
             }
+            if (ready) connected = true
           }
         }
       } catch (error) {
