@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { questionIdFromPath, questionPath } from '../../shared/questionUrls'
 import { postsApi, commentsApi, reactionsApi } from '../api/postsApi'
 import { loadMembership } from '../api/postData'
@@ -17,7 +18,9 @@ import CommentItem from '../components/posts/CommentItem'
 import PostImage from '../components/posts/PostImage'
 import Button from '../components/Button/Button'
 import InformationMessage from '../components/InformationMessage/InformationMessage'
+import ShareIcon from '../components/icons/ShareIcon'
 import s from '../components/common/Content.module.scss'
+import cardStyles from '../components/home/QuestionCard.module.scss'
 
 export default function PostPage({ id, commentId }) {
   const { user, token, isAuthenticated } = useAuth()
@@ -25,6 +28,12 @@ export default function PostPage({ id, commentId }) {
   const [commentSort, setCommentSort] = useState('likes-asc')
   const [busy, setBusy] = useState('')
   const [error, setError] = useState('')
+  const [shareMessage, setShareMessage] = useState('')
+  useEffect(() => {
+    if (!shareMessage) return
+    const timeout = window.setTimeout(() => setShareMessage(''), 3000)
+    return () => window.clearTimeout(timeout)
+  }, [shareMessage])
   const detail = useResource(
     useCallback(
       async (signal) => {
@@ -141,6 +150,20 @@ export default function PostPage({ id, commentId }) {
     })
   }
   const data = detail.data
+  const handleShare = async () => {
+    if (!data) return
+    setShareMessage('')
+    const url = new URL(questionPath(data.post.id, data.post.title), window.location.origin).href
+    try {
+      if (navigator.share) await navigator.share({ title: data.post.title, url })
+      else {
+        await navigator.clipboard.writeText(url)
+        setShareMessage('Link copied')
+      }
+    } catch (error) {
+      if (error.name !== 'AbortError') setShareMessage('Could not share this question.')
+    }
+  }
   const usersById = new Map(
     data?.users.map((author) => [String(author.id), author]),
   )
@@ -213,6 +236,8 @@ export default function PostPage({ id, commentId }) {
                 initialLikes={data.likes}
                 disabled={!canInteract}
               />
+              <Button variant="secondary" size="small" icon={<ShareIcon width={18} height={18} />} onClick={handleShare}>Share</Button>
+              {!isOwner && <>
               <Button
                 variant="secondary"
                 size="small"
@@ -239,15 +264,21 @@ export default function PostPage({ id, commentId }) {
               >
                 {membership.data?.subscribed ? 'Unfollow' : 'Follow by email'}
               </Button>
+              </>}
             </div>
-            {isAuthenticated && (
+            {shareMessage && createPortal(
+              <div className={cardStyles.shareToast} role="status">{shareMessage}</div>,
+              document.body,
+            )}
+            {isAuthenticated && !isOwner && (
               <ResourceState
                 error={membership.error}
                 onRetry={membership.reload}
               />
             )}
-            {isOwner && (
-              <div className={s.actions}>
+          </article>
+            {(isOwner || user?.role === 'admin') && (
+              <div className={`${s.actions} ${s.postManagementActions}`}>
                 <Button
                   variant="additional"
                   size="small"
@@ -279,9 +310,8 @@ export default function PostPage({ id, commentId }) {
                 />
               </div>
             )}
-          </article>
           <section id="comments" className={s.card}>
-            <h2 className={s.title}>Replies - {data.comments.length}</h2>
+            <h2 className={s.title}>Replies {data.comments.length}</h2>
             <label className={`${s.label} ${s.replySort}`}>
               Sort replies
               <select className={s.select} value={commentSort} onChange={(event) => setCommentSort(event.target.value)}>

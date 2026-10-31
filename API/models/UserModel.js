@@ -87,12 +87,19 @@ class UserModel {
         };
     }
 
-    static async verifyEmail(userId) {
+    static async setVerificationToken(userId, email, tokenHash) {
+        await pool.execute(
+            `UPDATE DbUser SET verification_token_hash = ? WHERE id = ? AND email = ? AND email_verified = FALSE`,
+            [tokenHash, userId, email]
+        );
+    }
+
+    static async verifyEmail(userId, email, tokenHash) {
         const [result] = await pool.execute(
             `UPDATE DbUser
-            SET email_verified = TRUE
-            WHERE id = ?`,
-            [userId]
+            SET email_verified = TRUE, verification_token_hash = NULL
+            WHERE id = ? AND email = ? AND email_verified = FALSE AND verification_token_hash = ?`,
+            [userId, email, tokenHash]
         );
 
         return result;
@@ -129,10 +136,11 @@ class UserModel {
         };
         const fields = Object.keys(changes);
         const assignments = fields.map(field => `${columns[field]} = ?`).join(", ");
+        const invalidateVerification = "email" in changes || "email_verified" in changes;
         const values = fields.map(field => changes[field]);
 
         const [result] = await pool.execute(
-            `UPDATE DbUser SET ${assignments} WHERE id = ?`,
+            `UPDATE DbUser SET ${assignments}${invalidateVerification ? ", verification_token_hash = NULL" : ""} WHERE id = ?`,
             [...values, id]
         );
 

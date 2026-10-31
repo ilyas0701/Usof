@@ -1,10 +1,10 @@
 INSERT INTO DbPost
     (id, author_id, title, publish_date, status, content)
 VALUES
-    (1, 2, 'How does async await work?', NOW(), 'active',
+    (1, 2, 'How does async await work?', '2026-10-20 10:00:00', 'active',
      'I am trying to understand asynchronous programming in JavaScript.'),
 
-    (2, 3, 'How to connect Node.js to MySQL?', NOW(), 'active',
+    (2, 3, 'How to connect Node.js to MySQL?', '2026-10-23 15:30:00', 'active',
      'What is the best way to connect a Node.js application to MySQL?'),
 
     (3, 4, 'Express middleware problem', NOW(), 'active',

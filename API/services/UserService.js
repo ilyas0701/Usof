@@ -154,6 +154,18 @@ class UserService {
         return this.findById(id);
     }
 
+    static async updateEmailVerification(id, actor, verified) {
+        if (actor?.role !== "admin") {
+            throw new HttpError(403, "Admin access required");
+        }
+        if (typeof verified !== "boolean") {
+            throw new HttpError(400, "Email verification must be true or false");
+        }
+        await this.findById(id);
+        await UserModel.update(id, {email_verified: verified});
+        return this.findById(id);
+    }
+
     static async updateRole(id, role) {
         if (role !== "user" && role !== "admin") {
             throw new HttpError(400, "Role must be user or admin");

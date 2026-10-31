@@ -3,6 +3,12 @@ import { appConfig } from "../config/app.js";
 import { emailConfig } from "../config/email.js";
 import { questionPath } from "../../shared/questionUrls.js";
 
+function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, (character) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    })[character]);
+}
+
 const transporter = nodemailer.createTransport({
     host: emailConfig.host,
     port: emailConfig.port,
@@ -25,12 +31,15 @@ class EmailService {
         const text = type === "post_deleted"
             ? `${message}: ${post.title}`
             : `${message}: ${post.title}\nOpen the post: ${link}`;
+        const html = `<p>${escapeHtml(message)}: ${escapeHtml(post.title)}</p>` +
+            (type === "post_deleted" ? "" : `<p><a href="${escapeHtml(link)}">Open the post</a></p>`);
 
         await transporter.sendMail({
             from: `"USOF" <${emailConfig.user}>`,
             to: email,
             subject: message,
-            text
+            text,
+            html
         });
     }
 

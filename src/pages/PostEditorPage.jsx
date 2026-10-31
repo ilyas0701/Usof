@@ -13,9 +13,12 @@ import Button from '../components/Button/Button'
 import InformationMessage from '../components/InformationMessage/InformationMessage'
 import PostImage from '../components/posts/PostImage'
 import SelectedImagePreview from '../components/posts/SelectedImagePreview'
+import DeleteButton from '../components/common/DeleteButton'
 import s from '../components/common/Content.module.scss'
 
 function PostForm({ post, categories, selectedCategories, images = [] }) {
+  const { user } = useAuth()
+  const moderationOnly = Boolean(post) && String(post.author_id) !== String(user.userId)
   const [savedImages, setSavedImages] = useState(images)
   const [removedImages, setRemovedImages] = useState([])
   const fileInput = useRef(null)
@@ -48,8 +51,7 @@ function PostForm({ post, categories, selectedCategories, images = [] }) {
     let saved = false
     try {
       const body = {
-        title: title.trim(),
-        content: content.trim(),
+        ...(!moderationOnly ? { title: title.trim(), content: content.trim() } : {}),
         categories: [...new Set(selected)],
         status,
       }
@@ -78,12 +80,18 @@ function PostForm({ post, categories, selectedCategories, images = [] }) {
   return (
     <form className={`${s.card} ${s.form}`} onSubmit={handleSubmit}>
       {error && <InformationMessage type="error" description={error} />}
+      {moderationOnly ? <div className={s.postSummary}>
+        <h2 className={s.title}>{post.title}</h2>
+        <p className={s.text}>{post.content}</p>
+      </div> : <>
       <TextField
         label="Question title"
         value={title}
         onChange={(event) => setTitle(event.target.value)}
         required
         maxLength={255}
+        readOnly={moderationOnly}
+        clearable={!moderationOnly}
         disabled={busy}
       />
       <label className={s.label}>
@@ -94,9 +102,11 @@ function PostForm({ post, categories, selectedCategories, images = [] }) {
           onChange={(event) => setContent(event.target.value)}
           required
           maxLength={65535}
+          readOnly={moderationOnly}
           disabled={busy}
         />
       </label>
+      </>}
       <fieldset className={s.fieldset} disabled={busy}>
         <legend>Categories</legend>
         <div className={s.categorySearchRow}>
@@ -142,9 +152,9 @@ function PostForm({ post, categories, selectedCategories, images = [] }) {
           <option value="active">Active</option>
           <option value="inactive">Inactive</option>
         </select>
-        <span className={s.muted}>Inactive questions are visible only to you and administrators.</span>
+        <span className={s.muted}>Inactive questions are visible only to their author and administrators.</span>
       </label>
-      {post && <label className={s.label}>
+      {post && !moderationOnly && <label className={s.label}>
         Add images
         <span className={s.muted}>
           Up to 5 images per upload, 5 MB each. JPEG, PNG, WebP or GIF.
@@ -165,7 +175,7 @@ function PostForm({ post, categories, selectedCategories, images = [] }) {
           }}
         />
       </label>}
-      {post && (savedImages.length > 0 || files.length > 0) && (
+      {post && !moderationOnly && (savedImages.length > 0 || files.length > 0) && (
         <div className={s.attachmentPreviews}>
           {savedImages.length > 0 && (
             <div>
@@ -185,7 +195,7 @@ function PostForm({ post, categories, selectedCategories, images = [] }) {
           )}
           {files.length > 0 && (
             <div>
-              <p className={s.muted}>Selected images · {files.length} — upload when you save</p>
+              <p className={s.muted}>Selected images · {files.length}</p>
               <div className={s.previewGrid}>
                 {files.map((file, index) => (
                   <figure className={s.previewItem} key={`${file.name}-${file.lastModified}-${index}`}>
@@ -216,6 +226,10 @@ function PostForm({ post, categories, selectedCategories, images = [] }) {
         >
           {savedId ? 'Open question' : 'Cancel'}
         </Button>
+        {moderationOnly && <DeleteButton label="question" onDelete={async () => {
+          await postsApi.remove(post.id)
+          navigate('/')
+        }} />}
       </div>
     </form>
   )
@@ -232,11 +246,11 @@ export default function PostEditorPage({ id }) {
           id ? postsApi.categories(id, signal) : Promise.resolve([]),
           id ? postsApi.images(id, signal) : Promise.resolve([]),
         ])
-        if (post && String(post.author_id) !== String(user.userId))
-          throw new Error('Only the author can edit this question.')
+        if (post && String(post.author_id) !== String(user.userId) && user.role !== 'admin')
+          throw new Error('Only the author or an admin can edit this question.')
         return { categories, post, selectedCategories, images }
       },
-      [id, user.userId],
+      [id, user.userId, user.role],
     ),
     token,
   )

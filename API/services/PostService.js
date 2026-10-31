@@ -254,7 +254,7 @@ class PostService {
 
     static async deleteImage(id, imageId, user) {
         const post = await this.findById(id, user);
-        if (String(post.author_id) !== String(user.userId) && user.role !== "admin") {
+        if (String(post.author_id) !== String(user.userId)) {
             throw new HttpError(403, "You cannot delete images from this post");
         }
         const image = await PostModel.findImage(post.id, validId(imageId));
@@ -271,7 +271,7 @@ class PostService {
     static async addImages(id, user, files) {
         const post = await this.findById(id, user);
 
-        if (String(post.author_id) !== String(user.userId) && user.role !== "admin") {
+        if (String(post.author_id) !== String(user.userId)) {
             throw new HttpError(403, "You cannot add images to this post");
         }
 

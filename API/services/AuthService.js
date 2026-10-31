@@ -5,6 +5,7 @@ import EmailService from "./EmailService.js";
 import jwt from "jsonwebtoken";
 import { resetConfig } from "../config/reset.js";
 import HttpError from "../utils/HttpError.js";
+import { createHash, randomUUID } from "node:crypto";
 
 class AuthService {
     static async register(userData = {}) {
@@ -61,6 +62,7 @@ class AuthService {
             {
                 userId,
                 email,
+                jti: randomUUID(),
                 purpose: "emailVerification"
             },
             appConfig.jwtSecret,
@@ -69,6 +71,7 @@ class AuthService {
             }
         );
 
+        await UserModel.setVerificationToken(userId, email, createHash("sha256").update(verificationToken).digest("hex"));
         await EmailService.sendVerificationEmail(
             email,
             verificationToken
@@ -90,11 +93,14 @@ class AuthService {
 
         const user = await UserModel.findById(payload.userId);
 
-        if (!user || user.email !== payload.email) {
+        if (!user || user.email !== payload.email || user.email_verified) {
             throw new HttpError(400, "Invalid verification token");
         }
 
-        await UserModel.verifyEmail(payload.userId);
+        const result = await UserModel.verifyEmail(payload.userId, payload.email, createHash("sha256").update(token).digest("hex"));
+        if (!result.affectedRows) {
+            throw new HttpError(400, "Verification link is invalid, already used or replaced");
+        }
     }
 
     static async login(userData = {}) {

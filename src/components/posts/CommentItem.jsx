@@ -8,6 +8,7 @@ import DeleteButton from '../common/DeleteButton'
 import Button from '../Button/Button'
 import InformationMessage from '../InformationMessage/InformationMessage'
 import s from '../common/Content.module.scss'
+import cardStyles from '../home/QuestionCard.module.scss'
 
 export default function CommentItem({
   comment,
@@ -58,7 +59,7 @@ export default function CommentItem({
     setError('')
     try {
       const updated = await commentsApi.update(comment.id, body)
-      onUpdate({ ...updated, likes: comment.likes })
+      onUpdate({ ...comment, ...updated, likes: comment.likes })
       setContent(updated.content)
       setEditing(false)
     } catch (err) {
@@ -91,11 +92,11 @@ export default function CommentItem({
             href={authorPath}
             onClick={(event) => followLink(event, authorPath)}
           >
-            {author ? `@${author.login}` : `User #${comment.author_id}`}
+            {author?.login || comment.author_login ? `@${author?.login || comment.author_login}` : `User #${comment.author_id}`}
           </a>
         ) : (
           <span>
-            {comment.author_id ? `User #${comment.author_id}` : 'removed'}
+            {comment.author_login ? `@${comment.author_login}` : comment.author_id ? `User #${comment.author_id}` : 'removed'}
           </span>
         )}
         <a
@@ -106,8 +107,8 @@ export default function CommentItem({
             {formatDate(comment.publish_date)}
           </time>
         </a>
-        {Boolean(comment.is_locked) && <span>Locked</span>}
-        {comment.status === 'inactive' && <span>Inactive</span>}
+        {Boolean(comment.is_locked) && <span className={cardStyles.inactiveStatus}>Locked</span>}
+        {comment.status === 'inactive' && <span className={cardStyles.inactiveStatus}>Inactive</span>}
       </div>
       {error && <InformationMessage type="error" description={error} />}
       {editing ? (
@@ -172,8 +173,9 @@ export default function CommentItem({
         >
           Reply
         </Button>
-        {isOwner && (
+        {(isOwner || user?.role === 'admin') && (
           <>
+            {isOwner && (
             <Button
               variant="additional"
               size="small"
@@ -186,6 +188,17 @@ export default function CommentItem({
             >
               Edit
             </Button>
+            )}
+            {user?.role === 'admin' && !isOwner && (
+              <Button
+                variant="additional"
+                size="small"
+                disabled={busy}
+                onClick={() => update({ status: comment.status === 'active' ? 'inactive' : 'active' })}
+              >
+                {comment.status === 'active' ? 'Set inactive' : 'Set active'}
+              </Button>
+            )}
             <Button
               variant="additional"
               size="small"

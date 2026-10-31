@@ -103,6 +103,8 @@ class PostModel {
             if (status === "inactive" && user) {
                 conditions.push("p.status = 'inactive' AND p.author_id = ?");
                 values.push(user.userId);
+            } else if (!status && user && String(authorId) === String(user.userId)) {
+                // both active and inactive
             } else {
                 conditions.push("p.status = 'active'");
             }
@@ -323,9 +325,11 @@ class PostModel {
 
     static async findComments(id, includeInactive = false) {
         const [rows] = await pool.execute(
-            `SELECT id, post_id, parent_id, author_id, publish_date, content, status, is_locked
-             FROM DbComment WHERE post_id = ? ${includeInactive ? "" : "AND status = 'active'"}
-             ORDER BY publish_date ASC, id ASC`,
+            `SELECT c.id, c.post_id, c.parent_id, c.author_id, c.publish_date, c.content, c.status, c.is_locked,
+                u.login AS author_login
+             FROM DbComment c LEFT JOIN DbUser u ON u.id = c.author_id
+             WHERE c.post_id = ? ${includeInactive ? "" : "AND c.status = 'active'"}
+             ORDER BY c.publish_date ASC, c.id ASC`,
             [id]
         );
 

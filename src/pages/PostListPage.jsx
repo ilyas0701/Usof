@@ -51,7 +51,7 @@ export default function PostListPage({ collection, categoryId }) {
         <p className={s.muted}>{list.data.category.description}</p>
       )}
       {categoryId && (
-        <label className={s.label}>
+        <label className={`${s.label} ${s.categorySortControl}`}>
           Sort questions
           <select
             className={s.select}

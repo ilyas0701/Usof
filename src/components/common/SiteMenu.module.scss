@@ -19,6 +19,18 @@
   &:hover { filter: brightness(1.03); }
   &:focus-visible { outline: 2px solid var(--c-dark-blue-800); outline-offset: 2px; }
 }
+.adminSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sectionLabel {
+  margin: 0;
+  padding: 0 20px;
+  color: var(--c-dark-blue-500);
+  font-size: 13px;
+  font-weight: 600;
+}
 .links {
   display: flex;
   flex-direction: column;

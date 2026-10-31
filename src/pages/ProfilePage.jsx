@@ -14,7 +14,7 @@ import Tabs from '../components/Tabs/Tabs'
 import s from '../components/common/Content.module.scss'
 
 function ProfileForm({ profile, onSaved }) {
-  const { updateUser } = useAuth()
+  const { updateUser, logoutUser } = useAuth()
   const [form, setForm] = useState({
     login: profile.login,
     full_name: profile.full_name || '',
@@ -54,12 +54,22 @@ function ProfileForm({ profile, onSaved }) {
         setAvatar(null)
         formElement.reset()
       }
+      if (form.email.trim() !== profile.email) {
+        await logoutUser()
+        navigate('/?view=auth&mode=login')
+        return
+      }
       setMessage(
         saved.email_verified
           ? 'Profile saved.'
           : 'Profile saved. Check your email to confirm your address.',
       )
     } catch (err) {
+      if (saved && saved.email !== profile.email) {
+        await logoutUser()
+        navigate('/?view=auth&mode=login')
+        return
+      }
       setError(
         `${saved ? 'Profile details saved. Avatar upload failed: ' : ''}${err.message}`,
       )

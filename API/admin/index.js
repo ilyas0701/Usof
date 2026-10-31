@@ -117,15 +117,22 @@ const resources = [
                 profile_picture: readOnly,
                 created_at: readOnly,
                 updated_at: readOnly,
-                email_verified: readOnly
+                email_verified: {type: "boolean", isVisible: {list: true, show: true, edit: true, filter: true}}
             },
             actions: {
                 new: newAction(async data => {
                     const user = await UserService.createUser(fields(data, ["login", "email", "password", "passwordConfirmation"]));
                     if (data.full_name) await UserService.update(user.id, {userId: user.id, role: "admin"}, {full_name: data.full_name});
                     return user;
-                }),
-                edit: editAction(async (id, data) => {
+                }, ["login", "email", "password", "passwordConfirmation", "full_name"]),
+                edit: editAction(async (id, data, currentAdmin) => {
+                    let verified;
+                    if (data.email_verified !== undefined) {
+                        if (![true, false, "true", "false", 1, 0, "1", "0"].includes(data.email_verified)) {
+                            throw new Error("Email verification must be true or false");
+                        }
+                        verified = [true, "true", 1, "1"].includes(data.email_verified);
+                    }
                     if (data.password && (data.password.length < 8 || data.password.length > 255 ||
                         data.password !== data.passwordConfirmation)) {
                         throw new Error("Password must have 8 to 255 characters and match confirmation");
@@ -134,6 +141,9 @@ const resources = [
                     const changes = fields(data, ["login", "full_name", "email"]);
                     if (Object.keys(changes).length) await UserService.update(id, {userId: id, role: "admin"}, changes);
                     if (data.role !== undefined) await UserService.updateRole(id, data.role);
+                    if (verified !== undefined) {
+                        await UserService.updateEmailVerification(id, actor(currentAdmin), verified);
+                    }
                     if (data.password) {
                         await UserModel.resetPassword(id, await bcrypt.hash(data.password, 10));
                     }

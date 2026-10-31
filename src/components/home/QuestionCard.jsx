@@ -79,7 +79,7 @@ export default function QuestionCard({ question, onTagClick, onChange }) {
             <span className={s.timestamp}>Locked</span>
           )}
           {question.status === 'inactive' && (
-            <span className={s.timestamp}>Inactive</span>
+            <span className={s.inactiveStatus}>Inactive</span>
           )}
         </div>
         <a
@@ -89,9 +89,7 @@ export default function QuestionCard({ question, onTagClick, onChange }) {
         >
           <h2 className={s.title}>{question.title}</h2>
           <p className={s.description}>
-            {question.content.length > 280
-              ? `${question.content.slice(0, 280)}…`
-              : question.content}
+            {question.content}
           </p>
         </a>
         <div className={s.tagsRow}>
@@ -145,6 +143,19 @@ export default function QuestionCard({ question, onTagClick, onChange }) {
           </div>, document.body,
         )}
       </div>
+      {user?.role === 'admin' && (
+        <a
+          href={`/posts/${question.id}/edit`}
+          className={s.editPost}
+          aria-label={`Edit question: ${question.title}`}
+          title="Edit question"
+          onClick={(event) => followLink(event, `/posts/${question.id}/edit`)}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="m16 3 5 5M4 15 15.5 3.5a3.54 3.54 0 0 1 5 5L9 20l-6 1 1-6Z" />
+          </svg>
+        </a>
+      )}
     </article>
   )
 }
