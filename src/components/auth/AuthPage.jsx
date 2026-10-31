@@ -6,6 +6,7 @@ import ForgotPasswordForm from './ForgotPasswordForm'
 import ResetPasswordForm from './ResetPasswordForm'
 import UserProfileCard from './UserProfileCard'
 import VerifyEmail from './VerifyEmail'
+import HeaderSearch from '../common/HeaderSearch'
 import { useAuth } from '../../hooks/useAuth'
 import { goBack } from '../../utils/navigation'
 import s from './AuthPage.module.scss'
@@ -36,6 +37,7 @@ export default function AuthPage({
           <span className={s.logoText}>USOF</span>
         </a>
 
+        <HeaderSearch />
         <div className={s.headerRight}>
           {onNavigateHome && (
             <button
