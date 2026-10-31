@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useState } from 'react'
-import AuthProvider from './context/AuthContext'
+import AuthSession from './components/common/AuthSession'
 import { useAuth } from './hooks/useAuth'
 import HomePage from './pages/HomePage'
 import AuthPage from './components/auth/AuthPage'
@@ -118,9 +118,9 @@ function AppRoutes() {
 
 export default function App() {
   return (
-    <AuthProvider>
+    <AuthSession>
       <AppRoutes />
       <SiteMenu />
-    </AuthProvider>
+    </AuthSession>
   )
 }

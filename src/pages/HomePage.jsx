@@ -1,4 +1,6 @@
 import { useCallback, useState, useEffect, useRef } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { filterChanged, categoryToggled, filtersReset } from '../store/filtersSlice'
 import QuestionCard from '../components/home/QuestionCard'
 import FilterDrawer from '../components/home/FilterDrawer'
 import Button from '../components/Button/Button'
@@ -16,38 +18,12 @@ import { navigate } from '../utils/navigation'
 import AccountMenu from '../components/common/AccountMenu'
 import HeaderSearch from '../components/common/HeaderSearch'
 
-const FILTERS_KEY = 'usof_question_filters'
-
-function readFilters() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(FILTERS_KEY)) || {}
-    return {
-      selectedTags: Array.isArray(saved.selectedTags) ? saved.selectedTags.filter((tag) => typeof tag === 'string') : [],
-      activeTab: ['all', 'popular', 'disliked'].includes(saved.activeTab) ? saved.activeTab : 'all',
-      dateFrom: /^\d{4}-\d{2}-\d{2}$/.test(saved.dateFrom) ? saved.dateFrom : '',
-      dateTo: /^\d{4}-\d{2}-\d{2}$/.test(saved.dateTo) ? saved.dateTo : '',
-      status: saved.status === 'inactive' ? 'inactive' : 'active',
-    }
-  } catch {
-    return {}
-  }
-}
-
 export default function HomePage({ onOpenAuth }) {
   const { isAuthenticated, token } = useAuth()
   const searchQuery = new URLSearchParams(window.location.search).get('q') || ''
-  const [savedFilters] = useState(readFilters)
-  const [selectedTags, setSelectedTags] = useState(savedFilters.selectedTags || [])
-  const [activeTab, setActiveTab] = useState(savedFilters.activeTab || 'all')
+  const dispatch = useDispatch()
+  const { selectedTags, activeTab, dateFrom, dateTo, status } = useSelector((state) => state.filters)
   const [page, setPage] = useState(1)
-  const [dateFrom, setDateFrom] = useState(savedFilters.dateFrom || '')
-  const [dateTo, setDateTo] = useState(savedFilters.dateTo || '')
-  const [status, setStatus] = useState(savedFilters.status || 'active')
-  useEffect(() => {
-    try {
-      localStorage.setItem(FILTERS_KEY, JSON.stringify({ selectedTags, activeTab, dateFrom, dateTo, status }))
-    } catch { /* Filtering still works when browser storage is unavailable. */ }
-  }, [selectedTags, activeTab, dateFrom, dateTo, status])
   const visibleStatus = isAuthenticated ? status : 'active'
   const [debouncedQuery, setDebouncedQuery] = useState('')
   const categories = useResource(
@@ -101,12 +77,12 @@ export default function HomePage({ onOpenAuth }) {
     ),
     token,
   )
-  const changeFilter = (setter) => (value) => {
-    setter(value)
+  const changeFilter = (name) => (value) => {
+    dispatch(filterChanged({ name, value }))
     setPage(1)
   }
   const toggleTag = (tag) => {
-    setSelectedTags((current) => current.includes(tag) ? current.filter((item) => item !== tag) : [...current, tag])
+    dispatch(categoryToggled(tag))
     setPage(1)
   }
   const filteredQuestions = feed.data?.posts || []
@@ -154,11 +130,7 @@ export default function HomePage({ onOpenAuth }) {
   const hasActiveFilters = activeFilterCount > 0
 
   const handleResetFilters = () => {
-    setActiveTab('all')
-    setSelectedTags([])
-    setDateFrom('')
-    setDateTo('')
-    setStatus('active')
+    dispatch(filtersReset())
     setPage(1)
   }
 
@@ -263,7 +235,7 @@ export default function HomePage({ onOpenAuth }) {
                         <button
                           type="button"
                           className={s.chipRemoveBtn}
-                          onClick={() => changeFilter(setActiveTab)('all')}
+                          onClick={() => changeFilter('activeTab')('all')}
                           aria-label="Clear sorting"
                         >
                           <CrossIcon width={10} height={10} />
@@ -358,16 +330,16 @@ export default function HomePage({ onOpenAuth }) {
         isOpen={isFilterDrawerOpen}
         onClose={closeFilters}
         activeTab={activeTab}
-        onTabChange={changeFilter(setActiveTab)}
+        onTabChange={changeFilter('activeTab')}
         selectedTags={selectedTags}
         onTagSelect={toggleTag}
         popularTags={(categories.data || []).map((category) => category.title)}
         dateFrom={dateFrom}
         dateTo={dateTo}
-        onDateFromChange={changeFilter(setDateFrom)}
-        onDateToChange={changeFilter(setDateTo)}
+        onDateFromChange={changeFilter('dateFrom')}
+        onDateToChange={changeFilter('dateTo')}
         status={visibleStatus}
-        onStatusChange={changeFilter(setStatus)}
+        onStatusChange={changeFilter('status')}
         isAuthenticated={isAuthenticated}
         onResetFilters={handleResetFilters}
       />
