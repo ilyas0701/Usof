@@ -1,6 +1,120 @@
 import pool from "../database/connection.js";
 
 class PostModel {
+    static async withCardData(result, user) {
+        if (!result.posts.length) {
+            return result;
+        }
+
+        const postIds = result.posts.map(post => post.id);
+        const includeInactive = user?.role === "admin";
+        const [categories, likes, commentCounts] = await Promise.all([
+            this.findCategoriesForPosts(postIds),
+            this.findLikesForPosts(postIds),
+            this.countCommentsForPosts(postIds, includeInactive)
+        ]);
+
+        const categoriesByPost = this.groupByPost(categories);
+        const likesByPost = this.groupByPost(likes);
+        const countsByPost = new Map();
+
+        for (const row of commentCounts) {
+            countsByPost.set(String(row.post_id), Number(row.total));
+        }
+
+        const posts = [];
+
+        for (const post of result.posts) {
+            const postId = String(post.id);
+
+            posts.push({
+                ...post,
+                categories: categoriesByPost.get(postId) || [],
+                likes: likesByPost.get(postId) || [],
+                commentsCount: countsByPost.get(postId) || 0
+            });
+        }
+
+        return {...result, posts};
+    }
+
+    static async findCategoriesForPosts(postIds) {
+        if (!postIds.length) {
+            return [];
+        }
+
+        const placeholders = postIds.map(() => "?").join(", ");
+        const [categories] = await pool.execute(
+            `SELECT pc.post_id, c.id, c.title, c.description
+             FROM DbPostCategory pc
+             JOIN DbCategory c ON c.id = pc.category_id
+             WHERE pc.post_id IN (${placeholders})
+             ORDER BY c.id`,
+            postIds
+        );
+
+        return categories;
+    }
+
+    static async findLikesForPosts(postIds) {
+        if (!postIds.length) {
+            return [];
+        }
+
+        const placeholders = postIds.map(() => "?").join(", ");
+        const [likes] = await pool.execute(
+            `SELECT id, post_id, author_id, type
+             FROM DbLike
+             WHERE post_id IN (${placeholders})
+             ORDER BY id`,
+            postIds
+        );
+
+        return likes;
+    }
+
+    static async countCommentsForPosts(postIds, includeInactive = false) {
+        if (!postIds.length) {
+            return [];
+        }
+
+        const placeholders = postIds.map(() => "?").join(", ");
+        const statusFilter = includeInactive ? "" : "AND status = 'active'";
+        const [counts] = await pool.execute(
+            `SELECT post_id, COUNT(*) AS total
+             FROM DbComment
+             WHERE post_id IN (${placeholders}) ${statusFilter}
+             GROUP BY post_id`,
+            postIds
+        );
+
+        return counts;
+    }
+
+    static groupByPost(rows) {
+        const grouped = new Map();
+
+        for (const row of rows) {
+            const postId = String(row.post_id);
+
+            if (!grouped.has(postId)) {
+                grouped.set(postId, []);
+            }
+
+            grouped.get(postId).push(row);
+        }
+
+        return grouped;
+    }
+
+    static async findMembership(postId, userId) {
+        const [rows] = await pool.execute(`SELECT
+            EXISTS(SELECT 1 FROM DbFavorite WHERE post_id = ? AND user_id = ?) AS favorite,
+            EXISTS(SELECT 1 FROM DbPostSubscription WHERE post_id = ? AND user_id = ?) AS subscribed`,
+        [postId, userId, postId, userId]);
+        return {favorite: Boolean(rows[0].favorite), subscribed: Boolean(rows[0].subscribed)};
+    }
+
     static async findSubscriberEmails(postId) {
         const [rows] = await pool.execute(
             `SELECT u.email
@@ -333,7 +447,18 @@ class PostModel {
             [id]
         );
 
-        return rows;
+        if (!rows.length) return rows;
+
+        const ids = rows.map(row => row.id);
+        const [likes] = await pool.execute(`SELECT id, comment_id, author_id, type FROM DbLike
+            WHERE comment_id IN (${ids.map(() => '?').join(', ')}) ORDER BY id`, ids);
+        const grouped = new Map();
+        for (const like of likes) {
+            const key = String(like.comment_id);
+            if (!grouped.has(key)) grouped.set(key, []);
+            grouped.get(key).push(like);
+        }
+        return rows.map(row => ({...row, likes: grouped.get(String(row.id)) || []}));
     }
 
     static async createComment(postId, authorId, content, parentId = null) {

@@ -3,6 +3,22 @@ import { sendErrorResponse } from "../utils/HttpError.js";
 import { subscribeToPost } from "../services/PostEvents.js";
 
 class PostController {
+    static async details(req, res) {
+        try {
+            return res.json(await PostService.findDetails(req.params.id, req.user));
+        } catch (error) {
+            return sendErrorResponse(res, error);
+        }
+    }
+
+    static async membership(req, res) {
+        try {
+            return res.json(await PostService.findMembership(req.params.id, req.user));
+        } catch (error) {
+            return sendErrorResponse(res, error);
+        }
+    }
+
     static async events(req, res) {
         try {
             const post = await PostService.findById(req.params.id, req.user);

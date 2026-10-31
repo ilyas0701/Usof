@@ -88,7 +88,7 @@ class PostService {
             throw new HttpError(400, "Page size cannot exceed 100");
         }
 
-        return PostModel.findSubscriptions({userId: user.userId, role: user.role, page, pageSize});
+        return PostModel.withCardData(await PostModel.findSubscriptions({userId: user.userId, role: user.role, page, pageSize}), user);
     }
 
     static async addSubscription(id, user) {
@@ -123,7 +123,7 @@ class PostService {
             throw new HttpError(400, "Page size cannot exceed 100");
         }
 
-        return PostModel.findFavorites({userId: user.userId, role: user.role, page, pageSize});
+        return PostModel.withCardData(await PostModel.findFavorites({userId: user.userId, role: user.role, page, pageSize}), user);
     }
 
     static async addFavorite(id, user) {
@@ -200,7 +200,7 @@ class PostService {
             throw new HttpError(400, "dateFrom must not be after dateTo");
         }
 
-        return PostModel.findAll({
+        const result = await PostModel.findAll({
             page,
             pageSize,
             sort,
@@ -213,6 +213,7 @@ class PostService {
             search,
             user
         });
+        return PostModel.withCardData(result, user);
     }
 
     static async findById(id, user) {
@@ -224,6 +225,20 @@ class PostService {
         }
 
         return post;
+    }
+
+    static async findDetails(id, user) {
+        const post = await this.findById(id, user);
+        const [categories, comments, images, likes] = await Promise.all([
+            PostModel.findCategories(post.id), PostModel.findComments(post.id, user?.role === 'admin'),
+            PostModel.findImages(post.id), PostModel.findLikes(post.id)
+        ]);
+        return {post, categories, comments, images, likes};
+    }
+
+    static async findMembership(id, user) {
+        const post = await this.findById(id, user);
+        return PostModel.findMembership(post.id, user.userId);
     }
 
     static async findCategories(id, user) {

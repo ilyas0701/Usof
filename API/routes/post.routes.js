@@ -12,6 +12,8 @@ router.get("/favorites", authMiddleware, PostController.findFavorites);
 router.get("/subscriptions", authMiddleware, PostController.findSubscriptions);
 router.get("/:id", optionalAuthMiddleware, PostController.findById);
 router.get("/:id/events", optionalAuthMiddleware, PostController.events);
+router.get("/:id/details", optionalAuthMiddleware, PostController.details);
+router.get("/:id/membership", authMiddleware, PostController.membership);
 router.get("/:id/comments", optionalAuthMiddleware, PostController.findComments);
 router.post("/:id/comments", authMiddleware, PostController.createComment);
 router.get("/:id/categories", optionalAuthMiddleware, PostController.findCategories);
