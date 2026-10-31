@@ -17,6 +17,17 @@
   transition: var(--transition-default);
   user-select: none;
 
+  .iconWrapper {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    svg {
+      display: block;
+    }
+  }
+
   .content {
     display: inline-flex;
     align-items: center;

@@ -50,7 +50,7 @@ The author can update or delete a post. Post images can be uploaded as local fil
 
 ## Categories, comments, and likes
 
-Categories and their posts can be viewed through the API. Only admins can create, update, or delete categories. Authenticated users can add comments under active posts that are not locked. Comments can also be locked, which stops new reactions from regular users. A user can add one like or dislike to a post or comment and can remove their own reaction. The database prevents duplicate reactions to the same item.
+Categories and their posts can be viewed through the API. Only admins can create, update, or delete categories. Authenticated users can add comments under active posts that are not locked. Comment text cannot be edited, even by an admin. Only the comment author or an admin can change its active/inactive status on a post they can access. Only the author or an admin can lock or unlock a comment, which stops new replies and reactions from regular users. Existing visibility rules still hide other authors' inactive comments from regular users. A user can add one like or dislike to a post or comment and can remove their own reaction. The database prevents duplicate reactions to the same item.
 
 User rating is calculated from the likes and dislikes received on that user's posts and comments. Each like adds one point and each dislike removes one point. The value is updated when reactions or related content change.
 

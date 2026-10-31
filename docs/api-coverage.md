@@ -5,6 +5,6 @@ This is a code review of the current routes, React request modules, page control
 ## Remaining Gaps
 
 - An admin can change post categories and lock state through the API, but the current panel edits only post status. React owner controls are hidden on other authors' posts.
-- An admin can edit comment content and lock state through the API, but the panel edits only comment status. React edit and delete controls are shown only to the comment author; admin deletion is available in the panel.
+- Comment content cannot be edited by any role. Only the comment author or an admin can change comment status through the API and React controls. Lock and delete controls are available to the author or an admin; the panel edits only comment status.
 - An admin can upload images to another author's post through the API, but the upload form is shown only to the author and no equivalent AdminJS upload exists.
 - Administrative REST routes for users, categories, and global comment/reaction management have AdminJS equivalents, but are not integrated into React. If assessment requires actual REST calls from the React frontend, these controls still need implementation.

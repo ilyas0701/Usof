@@ -82,27 +82,15 @@ class CommentService {
 
         const fields = Object.keys(data);
 
-        if (!fields.length || fields.some(field => !["content", "status", "is_locked"].includes(field))) {
-            throw new HttpError(400, "Only content, status and is_locked can be updated");
+        if (!fields.length || fields.some(field => !["status", "is_locked"].includes(field))) {
+            throw new HttpError(400, "Only status and is_locked can be updated; comment content cannot be edited");
         }
 
         const changes = {};
 
-        if ("content" in data) {
-            if (String(user.userId) !== String(comment.author_id) && user.role !== "admin") {
-                throw new HttpError(403, "You cannot edit this comment");
-            }
-
-            if (typeof data.content !== "string" || !data.content.trim() || data.content.length > 65535) {
-                throw new HttpError(400, "Invalid content");
-            }
-
-            changes.content = data.content.trim();
-        }
-
         if ("status" in data) {
-            if (user.role !== "admin") {
-                throw new HttpError(403, "Only an admin can change the comment status");
+            if (String(user.userId) !== String(comment.author_id) && user.role !== "admin") {
+                throw new HttpError(403, "Only the author or an admin can change the comment status");
             }
 
             if (!["active", "inactive"].includes(data.status)) {

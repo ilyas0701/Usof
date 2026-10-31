@@ -130,7 +130,7 @@ add("patch", "/api/categories/{id}", "Categories", "Update a category as an admi
 add("delete", "/api/categories/{id}", "Categories", "Delete a category as an admin", {auth: true, noContent: true});
 
 add("get", "/api/comments/{id}", "Comments", "Get a comment", {optionalAuth: true, response: reference("Comment")});
-add("patch", "/api/comments/{id}", "Comments", "Update a comment", {auth: true, description: "The author or an admin can edit content or lock the comment. The author or admin can change status.", body: object({content: string, status, is_locked: {type: "boolean"}}), response: reference("Comment")});
+add("patch", "/api/comments/{id}", "Comments", "Update a comment", {auth: true, description: "Only the comment author or an admin can change its status on a post they can access. Comment content cannot be edited, including by admins. Only the author or an admin can change the lock state.", body: object({status, is_locked: {type: "boolean"}}), response: reference("Comment")});
 add("delete", "/api/comments/{id}", "Comments", "Delete a comment", {auth: true, noContent: true});
 add("get", "/api/comments/{id}/like", "Comments", "Get reactions to a comment", {optionalAuth: true, response: array(reference("Like"))});
 add("post", "/api/comments/{id}/like", "Comments", "React to a comment", {auth: true, body: reference("LikeInput"), response: reference("Like"), created: true});

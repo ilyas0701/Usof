@@ -21,8 +21,6 @@ export default function CommentItem({
   onDelete,
 }) {
   const { user, isAuthenticated } = useAuth()
-  const [editing, setEditing] = useState(false)
-  const [content, setContent] = useState(comment.content)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [replying, setReplying] = useState(false)
@@ -62,8 +60,6 @@ export default function CommentItem({
     try {
       const updated = await commentsApi.update(comment.id, body)
       onUpdate({ ...comment, ...updated, likes: comment.likes })
-      setContent(updated.content)
-      setEditing(false)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -113,47 +109,7 @@ export default function CommentItem({
         {comment.status === 'inactive' && <span className={cardStyles.inactiveStatus}>Inactive</span>}
       </div>
       {error && <InformationMessage type="error" description={error} />}
-      {editing ? (
-        <form
-          className={s.form}
-          onSubmit={(event) => {
-            event.preventDefault()
-            update({ content: content.trim() })
-          }}
-        >
-          <label className={s.label}>
-            Edit comment
-            <textarea
-              className={`${s.textarea} ${s.smallTextarea}`}
-              value={content}
-              onChange={(event) => setContent(event.target.value)}
-              required
-              maxLength={65535}
-              disabled={busy}
-            />
-          </label>
-          <div className={s.actions}>
-            <Button
-              type="submit"
-              variant="primary-black"
-              size="small"
-              loading={busy}
-            >
-              Save
-            </Button>
-            <Button
-              variant="secondary"
-              size="small"
-              disabled={busy}
-              onClick={() => setEditing(false)}
-            >
-              Cancel
-            </Button>
-          </div>
-        </form>
-      ) : (
-        <p className={s.text}>{comment.content}</p>
-      )}
+      <p className={s.text}>{comment.content}</p>
       <div className={s.actions}>
         <Reactions
           resource="comments"
@@ -169,38 +125,23 @@ export default function CommentItem({
           aria-expanded={replying}
           onClick={() => {
             if (!isAuthenticated) return openLogin()
-            setEditing(false)
             setReplying((current) => !current)
           }}
         >
           Reply
         </Button>
         {(isOwner || user?.role === 'admin') && (
+          <Button
+            variant="additional"
+            size="small"
+            disabled={busy}
+            onClick={() => update({ status: comment.status === 'active' ? 'inactive' : 'active' })}
+          >
+            {comment.status === 'active' ? 'Set inactive' : 'Set active'}
+          </Button>
+        )}
+        {(isOwner || user?.role === 'admin') && (
           <>
-            {isOwner && (
-            <Button
-              variant="additional"
-              size="small"
-              disabled={busy}
-              onClick={() => {
-                setContent(comment.content)
-                setReplying(false)
-                setEditing(true)
-              }}
-            >
-              Edit
-            </Button>
-            )}
-            {user?.role === 'admin' && !isOwner && (
-              <Button
-                variant="additional"
-                size="small"
-                disabled={busy}
-                onClick={() => update({ status: comment.status === 'active' ? 'inactive' : 'active' })}
-              >
-                {comment.status === 'active' ? 'Set inactive' : 'Set active'}
-              </Button>
-            )}
             <Button
               variant="additional"
               size="small"

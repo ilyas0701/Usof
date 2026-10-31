@@ -23,7 +23,6 @@ import cardStyles from '../components/home/QuestionCard.module.scss'
 export default function PostPage({ id, commentId }) {
   const { user, token, isAuthenticated } = useAuth()
   const [content, setContent] = useState('')
-  const [commentSort, setCommentSort] = useState('likes-asc')
   const [busy, setBusy] = useState('')
   const [error, setError] = useState('')
   const [shareMessage, setShareMessage] = useState('')
@@ -253,15 +252,6 @@ export default function PostPage({ id, commentId }) {
             )}
           <section id="comments" className={s.card}>
             <h2 className={s.title}>Replies {data.comments.length}</h2>
-            <label className={`${s.label} ${s.replySort}`}>
-              Sort replies
-              <select className={s.select} value={commentSort} onChange={(event) => setCommentSort(event.target.value)}>
-                <option value="likes-asc">Fewest likes first</option>
-                <option value="likes-desc">Most liked first</option>
-                <option value="newest">Newest first</option>
-                <option value="oldest">Oldest first</option>
-              </select>
-            </label>
             {canInteract ? (
               isAuthenticated ? (
                 <form className={`${s.form} ${s.replyForm}`} onSubmit={submitComment}>
@@ -298,7 +288,7 @@ export default function PostPage({ id, commentId }) {
                 This question is closed for new replies and reactions.
               </p>
             )}
-            {commentThreads(data.comments, commentSort).map(({ comment, depth }, index, threads) => (
+            {commentThreads(data.comments, 'likes-asc').map(({ comment, depth }, index, threads) => (
               <CommentItem
                 key={comment.id}
                 comment={comment}

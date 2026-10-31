@@ -30,7 +30,7 @@ app.use((req, res) => {
     return res.status(404).json({message: "Route does not exist"});
 });
 
-app.use((error, req, res, next) => {
+app.use((error, req, res, _next) => {
     const statusCode = error.statusCode ?? error.status ?? 500;
     const message = statusCode === 500 ? "Internal server error" : error.message;
 
