@@ -8,10 +8,8 @@ import FilterIcon from '../components/icons/FilterIcon'
 import CrossIcon from '../components/icons/CrossIcon'
 import { useAuth } from '../hooks/useAuth'
 import s from './HomePage.module.scss'
-import { postsApi } from '../api/postsApi'
-import { loadPostCard } from '../api/postData'
-import { categoriesApi } from '../api/categoriesApi'
-import useResource from '../hooks/useResource'
+import useApiResource from '../hooks/useApiResource'
+import { queryString } from '../api/client'
 import ResourceState from '../components/common/ResourceState'
 import Pagination from '../components/common/Pagination'
 import { navigate } from '../utils/navigation'
@@ -19,16 +17,15 @@ import AccountMenu from '../components/common/AccountMenu'
 import HeaderSearch from '../components/common/HeaderSearch'
 
 export default function HomePage({ onOpenAuth }) {
-  const { isAuthenticated, token } = useAuth()
+  const { isAuthenticated } = useAuth()
   const searchQuery = new URLSearchParams(window.location.search).get('q') || ''
   const dispatch = useDispatch()
   const { selectedTags, activeTab, dateFrom, dateTo, status } = useSelector((state) => state.filters)
   const [page, setPage] = useState(1)
   const visibleStatus = isAuthenticated ? status : 'active'
-  const [debouncedQuery, setDebouncedQuery] = useState('')
-  const categories = useResource(
-    useCallback((signal) => categoriesApi.list(signal), []),
-  )
+  const [debouncedQuery, setDebouncedQuery] = useState(searchQuery.trim())
+  const categories = useApiResource('/categories')
+
   useEffect(() => {
     const timeout = window.setTimeout(
       () => setDebouncedQuery(searchQuery.trim()),
@@ -36,51 +33,19 @@ export default function HomePage({ onOpenAuth }) {
     )
     return () => window.clearTimeout(timeout)
   }, [searchQuery])
-  const feed = useResource(
-    useCallback(
-      async (signal) => {
-        if (!categories.data) return { posts: [], total: 0 }
-        const categoryIds = categories.data.filter((item) => selectedTags.includes(item.title)).map((item) => item.id)
-        const params = {
-          page,
-          pageSize: 10,
-          sort:
-            activeTab === 'popular'
-              ? 'likes'
-              : activeTab === 'disliked'
-                ? 'dislikes'
-              : debouncedQuery
-                ? 'relevance'
-                : 'date',
-          q: debouncedQuery || undefined,
-          categories: categoryIds.length ? categoryIds.join(',') : undefined,
-          dateFrom,
-          dateTo,
-          status: visibleStatus,
-        }
-        const result = await (debouncedQuery ? postsApi.search : postsApi.list)(params, signal)
-        const posts = await Promise.all(
-          result.posts.map((post) => loadPostCard(post, signal)),
-        )
-        return { ...result, posts }
-      },
-      [
-        categories.data,
-        debouncedQuery,
-        selectedTags,
-        activeTab,
-        page,
-        dateFrom,
-        dateTo,
-        visibleStatus,
-      ],
-    ),
-    token,
-  )
+  const categoryIds = (categories.data || []).filter((item) => selectedTags.includes(item.title)).map((item) => item.id)
+  const feed = useApiResource(`/posts${debouncedQuery ? '/search' : ''}${queryString({
+    page, pageSize: 10,
+    sort: activeTab === 'popular' ? 'likes' : activeTab === 'disliked' ? 'dislikes' : debouncedQuery ? 'relevance' : 'date',
+    q: debouncedQuery || undefined,
+    categories: categoryIds.length ? categoryIds.join(',') : undefined,
+    dateFrom, dateTo, status: visibleStatus,
+  })}`, { skip: !categories.data })
   const changeFilter = (name) => (value) => {
     dispatch(filterChanged({ name, value }))
     setPage(1)
   }
+
   const toggleTag = (tag) => {
     dispatch(categoryToggled(tag))
     setPage(1)
@@ -282,7 +247,7 @@ export default function HomePage({ onOpenAuth }) {
                 error={categories.error || feed.error}
                 onRetry={() => {
                   categories.reload()
-                  feed.reload()
+                  if (categories.data) feed.reload()
                 }}
               />
               {!categories.loading &&

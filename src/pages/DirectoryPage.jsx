@@ -1,22 +1,13 @@
-import { useCallback } from 'react'
-import { usersApi } from '../api/usersApi'
-import { useAuth } from '../hooks/useAuth'
-import useResource from '../hooks/useResource'
+import useApiResource from '../hooks/useApiResource'
 import { followLink } from '../utils/navigation'
 import PageLayout from '../components/common/PageLayout'
 import ResourceState from '../components/common/ResourceState'
 import s from '../components/common/Content.module.scss'
 
 export default function DirectoryPage() {
-  const { token } = useAuth()
-  const list = useResource(
-    useCallback(
-      (signal) => usersApi.list(signal),
-      [],
-    ),
-    token,
-  )
+  const list = useApiResource('/users')
   const items = [...(list.data || [])].sort((a, b) => b.rating - a.rating)
+
   return (
     <PageLayout title="Users">
       <ResourceState

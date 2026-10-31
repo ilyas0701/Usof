@@ -1,7 +1,7 @@
-import { useCallback, useState } from 'react'
+import { useState } from 'react'
 import { usersApi } from '../api/usersApi'
 import { useAuth } from '../hooks/useAuth'
-import useResource from '../hooks/useResource'
+import useApiResource from '../hooks/useApiResource'
 import { navigate } from '../utils/navigation'
 import PageLayout from '../components/common/PageLayout'
 import ResourceState from '../components/common/ResourceState'
@@ -20,6 +20,7 @@ function UserEditor({ account, onSaved, onDeleted, onClose }) {
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const [confirmDelete, setConfirmDelete] = useState(false)
+
   const sync = (updated) => {
     onSaved(updated)
     if (String(updated.id) === String(user.userId)) updateUser(updated)
@@ -40,13 +41,13 @@ function UserEditor({ account, onSaved, onDeleted, onClose }) {
       setMessage('Changes saved.')
     } catch (error) {
       setError(error.message)
-      try { 
-        sync(await usersApi.get(account.id)) 
-      } 
-      catch { 
-        
+      try {
+        sync(await usersApi.get(account.id))
+      } catch {
       }
-    } finally { setBusy(false) }
+    } finally {
+      setBusy(false)
+    }
   }
   const remove = async () => {
     if (busy) return
@@ -56,9 +57,13 @@ function UserEditor({ account, onSaved, onDeleted, onClose }) {
       await usersApi.remove(account.id)
       onDeleted(account.id)
       if (String(account.id) === String(user.userId)) await logoutUser()
-    } catch (error) { setError(error.message) }
-    finally { setBusy(false) }
+    } catch (error) {
+      setError(error.message)
+    } finally {
+      setBusy(false)
+    }
   }
+
   return <form className={`${s.card} ${s.form}`} onSubmit={save}>
     <h2 className={s.title}>Edit user · {account.login}</h2>
     {error && <InformationMessage type="error" description={error} />}
@@ -87,13 +92,13 @@ function UserEditor({ account, onSaved, onDeleted, onClose }) {
 }
 
 function UserManager() {
-  const { token } = useAuth()
-  const users = useResource(useCallback((signal) => usersApi.list(signal), []), token)
+  const users = useApiResource('/users')
   const [query, setQuery] = useState('')
   const [limit, setLimit] = useState(20)
   const matching = (users.data || []).filter((item) =>
     [item.login, item.full_name, item.email].some((value) => value?.toLowerCase().includes(query.trim().toLowerCase())),
   )
+
   return <div className={s.form}>
     <TextField label="Search users by login, name or email" value={query} onChange={(event) => { setQuery(event.target.value); setLimit(20) }} />
     <ResourceState loading={users.loading} error={users.error} onRetry={users.reload} />
@@ -122,8 +127,8 @@ function UserManager() {
 }
 
 function UserEditPage({ id }) {
-  const { token } = useAuth()
-  const account = useResource(useCallback((signal) => usersApi.get(id, signal), [id]), token)
+  const account = useApiResource(`/users/${id}`)
+
   return <div className={s.form}>
     <ResourceState loading={account.loading} error={account.error} onRetry={account.reload} />
     {account.data && <UserEditor key={`editor-${id}`} account={account.data}
@@ -136,6 +141,7 @@ function UserEditPage({ id }) {
 
 export default function UserManagementPage({ id }) {
   const { user } = useAuth()
+
   return <PageLayout title={id ? 'Edit user' : 'Manage users'}>
     {user?.role === 'admin' ? (id ? <UserEditPage id={id} /> : <UserManager />) : <p role="alert">Admin access required.</p>}
   </PageLayout>

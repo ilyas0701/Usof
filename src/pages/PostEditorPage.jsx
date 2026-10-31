@@ -1,8 +1,7 @@
-import { useCallback, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { postsApi } from '../api/postsApi'
-import { categoriesApi } from '../api/categoriesApi'
 import { useAuth } from '../hooks/useAuth'
-import useResource from '../hooks/useResource'
+import useApiResource from '../hooks/useApiResource'
 import { navigate } from '../utils/navigation'
 import { questionPath } from '../../shared/questionUrls'
 import { validateImages } from '../utils/format'
@@ -236,24 +235,22 @@ function PostForm({ post, categories, selectedCategories, images = [] }) {
 }
 
 export default function PostEditorPage({ id }) {
-  const { token, user } = useAuth()
-  const editor = useResource(
-    useCallback(
-      async (signal) => {
-        const [categories, post, selectedCategories, images] = await Promise.all([
-          categoriesApi.list(signal),
-          id ? postsApi.get(id, signal) : Promise.resolve(null),
-          id ? postsApi.categories(id, signal) : Promise.resolve([]),
-          id ? postsApi.images(id, signal) : Promise.resolve([]),
-        ])
-        if (post && String(post.author_id) !== String(user.userId) && user.role !== 'admin')
-          throw new Error('Only the author or an admin can edit this question.')
-        return { categories, post, selectedCategories, images }
-      },
-      [id, user.userId, user.role],
-    ),
-    token,
-  )
+  const { user } = useAuth()
+  const categories = useApiResource('/categories')
+  const detail = useApiResource(`/posts/${id}/details`, { skip: !id })
+  const denied = detail.data && String(detail.data.post.author_id) !== String(user.userId) && user.role !== 'admin'
+  const editor = {
+    loading: categories.loading || detail.loading,
+    error: categories.error || detail.error || (denied ? 'Only the author or an admin can edit this question.' : ''),
+    reload: () => { categories.reload(); if (id) detail.reload() },
+    data: categories.data && (!id || detail.data) && !denied ? {
+      categories: categories.data,
+      post: detail.data?.post || null,
+      selectedCategories: detail.data?.categories || [],
+      images: detail.data?.images || [],
+    } : null,
+  }
+
   return (
     <PageLayout title={id ? 'Edit question' : 'Ask a question'}>
       <ResourceState

@@ -1,8 +1,6 @@
-import { useCallback, useState } from 'react'
-import { postsApi } from '../../api/postsApi'
-import { loadPostCard } from '../../api/postData'
-import { useAuth } from '../../hooks/useAuth'
-import useResource from '../../hooks/useResource'
+import { useState } from 'react'
+import useApiResource from '../../hooks/useApiResource'
+import { queryString } from '../../api/client'
 import QuestionCard from '../home/QuestionCard'
 import Pagination from '../common/Pagination'
 import ResourceState from '../common/ResourceState'
@@ -11,19 +9,9 @@ import s from '../common/Content.module.scss'
 const PAGE_SIZE = 10
 
 export default function ProfileQuestions({ authorId, isOwner, showSort = true }) {
-  const { token } = useAuth()
   const [page, setPage] = useState(1)
   const [sort, setSort] = useState('date')
-  const questions = useResource(
-    useCallback(async (signal) => {
-      const result = await postsApi.list({
-        author: authorId, page, pageSize: PAGE_SIZE, sort,
-      }, signal)
-      const posts = await Promise.all(result.posts.map((post) => loadPostCard(post, signal)))
-      return { ...result, posts }
-    }, [authorId, page, sort]),
-    token,
-  )
+  const questions = useApiResource(`/posts${queryString({ author: authorId, page, pageSize: PAGE_SIZE, sort })}`)
 
   return (
     <section className={`${s.card} ${s.form}`} aria-label="User questions">

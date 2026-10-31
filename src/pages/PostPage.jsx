@@ -1,11 +1,9 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { questionIdFromPath, questionPath } from '../../shared/questionUrls'
-import { postsApi, commentsApi, reactionsApi } from '../api/postsApi'
-import { loadMembership } from '../api/postData'
-import { usersApi } from '../api/usersApi'
+import { postsApi } from '../api/postsApi'
 import { useAuth } from '../hooks/useAuth'
-import useResource from '../hooks/useResource'
+import useApiResource from '../hooks/useApiResource'
 import usePostEvents from '../hooks/usePostEvents'
 import { followLink, navigate, openLogin } from '../utils/navigation'
 import { formatDate } from '../utils/format'
@@ -29,45 +27,18 @@ export default function PostPage({ id, commentId }) {
   const [busy, setBusy] = useState('')
   const [error, setError] = useState('')
   const [shareMessage, setShareMessage] = useState('')
+
   useEffect(() => {
     if (!shareMessage) return
     const timeout = window.setTimeout(() => setShareMessage(''), 3000)
     return () => window.clearTimeout(timeout)
   }, [shareMessage])
-  const detail = useResource(
-    useCallback(
-      async (signal) => {
-        const focused = commentId
-          ? await commentsApi.get(commentId, signal)
-          : null
-        const postId = focused?.post_id || id
-        const [post, categories, comments, images, likes, users] =
-          await Promise.all([
-            postsApi.get(postId, signal),
-            postsApi.categories(postId, signal),
-            postsApi.comments(postId, signal),
-            postsApi.images(postId, signal),
-            reactionsApi.list('posts', postId, signal),
-            token ? usersApi.list(signal) : Promise.resolve([]),
-          ])
-        if (
-          focused &&
-          !comments.some((comment) => String(comment.id) === String(focused.id))
-        )
-          comments.push(focused)
-        const withLikes = await Promise.all(
-          comments.map(async (comment) => ({
-            ...comment,
-            likes: await reactionsApi.list('comments', comment.id, signal),
-          })),
-        )
-        return { post, categories, comments: withLikes, images, likes, users }
-      },
-      [id, commentId, token],
-    ),
-  )
+  const focused = useApiResource(`/comments/${commentId}`, { skip: !commentId })
+  const resolvedId = commentId ? focused.data?.post_id : id
+  const detail = useApiResource(`/posts/${resolvedId}/details`, { skip: !resolvedId })
   const postId = detail.data?.post.id
   const postTitle = detail.data?.post.title
+
   useEffect(() => {
     if (!postId || questionIdFromPath(window.location.pathname) !== String(postId)) return
     const canonical = questionPath(postId, postTitle)
@@ -75,39 +46,9 @@ export default function PostPage({ id, commentId }) {
       window.history.replaceState(window.history.state, '', canonical + window.location.search + window.location.hash)
     }
   }, [postId, postTitle])
-  usePostEvents(postId, token, async (signal) => {
-    try {
-      const [post, comments, users] = await Promise.all([
-        postsApi.get(postId, signal),
-        postsApi.comments(postId, signal),
-        token ? usersApi.list(signal) : Promise.resolve([]),
-      ])
-      const withLikes = await Promise.all(
-        comments.map(async (comment) => ({
-          ...comment,
-          likes: await reactionsApi.list('comments', comment.id, signal),
-        })),
-      )
-      if (!signal.aborted) {
-        detail.setData(
-          (current) =>
-            current && { ...current, post, comments: withLikes, users },
-        )
-      }
-    } catch (error) {
-      if ([403, 404].includes(error.status)) detail.reload()
-      throw error
-    }
-  })
-  const membership = useResource(
-    useCallback(
-      (signal) =>
-        token && postId
-          ? loadMembership(postId, signal)
-          : Promise.resolve({ favorite: false, subscribed: false }),
-      [postId, token],
-    ),
-  )
+  usePostEvents(postId, token, () => detail.reload())
+  const isOwnPost = detail.data && String(user?.userId) === String(detail.data.post.author_id)
+  const membership = useApiResource(`/posts/${postId}/membership`, { skip: !token || !postId || isOwnPost })
 
   const run = async (action, task) => {
     if (!isAuthenticated) return openLogin()
@@ -127,6 +68,7 @@ export default function PostPage({ id, commentId }) {
       setBusy('')
     }
   }
+
   const toggleMembership = (key) =>
     run(key, async () => {
       const enabled = !membership.data[key]
@@ -136,6 +78,7 @@ export default function PostPage({ id, commentId }) {
       )
       membership.setData((current) => ({ ...current, [key]: enabled }))
     })
+
   const submitComment = (event) => {
     event.preventDefault()
     run('comment', async () => {
@@ -150,6 +93,7 @@ export default function PostPage({ id, commentId }) {
     })
   }
   const data = detail.data
+
   const handleShare = async () => {
     if (!data) return
     setShareMessage('')
@@ -164,9 +108,6 @@ export default function PostPage({ id, commentId }) {
       if (error.name !== 'AbortError') setShareMessage('Could not share this question.')
     }
   }
-  const usersById = new Map(
-    data?.users.map((author) => [String(author.id), author]),
-  )
   const isOwner = data && String(user?.userId) === String(data.post.author_id)
   const canInteract =
     data &&
@@ -176,9 +117,9 @@ export default function PostPage({ id, commentId }) {
   return (
     <PageLayout title="Question">
       <ResourceState
-        loading={detail.loading}
-        error={detail.error}
-        onRetry={detail.reload}
+        loading={detail.loading || focused.loading}
+        error={focused.error || detail.error}
+        onRetry={focused.error ? focused.reload : detail.reload}
       />
       {data && (
         <>
@@ -370,7 +311,6 @@ export default function PostPage({ id, commentId }) {
                     : [...current.comments, { ...reply, likes: [] }],
                 }))}
                 post={data.post}
-                author={usersById.get(String(comment.author_id))}
                 onUpdate={(updated) =>
                   detail.setData((current) => ({
                     ...current,

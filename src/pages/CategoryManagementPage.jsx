@@ -1,7 +1,7 @@
-import { useCallback, useState } from 'react'
+import { useState } from 'react'
 import { categoriesApi } from '../api/categoriesApi'
 import { useAuth } from '../hooks/useAuth'
-import useResource from '../hooks/useResource'
+import useApiResource from '../hooks/useApiResource'
 import PageLayout from '../components/common/PageLayout'
 import ResourceState from '../components/common/ResourceState'
 import TextField from '../components/TextField/TextField'
@@ -10,8 +10,7 @@ import InformationMessage from '../components/InformationMessage/InformationMess
 import s from '../components/common/Content.module.scss'
 
 function CategoryManager() {
-  const { token } = useAuth()
-  const categories = useResource(useCallback((signal) => categoriesApi.list(signal), []), token)
+  const categories = useApiResource('/categories')
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [busy, setBusy] = useState(false)
@@ -28,13 +27,13 @@ function CategoryManager() {
       setTitle('')
       setDescription('')
       setMessage('Category created.')
-      categories.reload()
     } catch (error) {
       setError(error.message)
     } finally {
       setBusy(false)
     }
   }
+
   return <>
     <form className={`${s.card} ${s.form}`} onSubmit={create}>
       <h2 className={s.title}>Create category</h2>
@@ -59,6 +58,7 @@ function CategoryManager() {
 
 export default function CategoryManagementPage() {
   const { user } = useAuth()
+
   return <PageLayout title="Manage categories">
     {user?.role === 'admin' ? <CategoryManager /> : <p role="alert">Admin access required.</p>}
   </PageLayout>

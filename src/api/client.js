@@ -1,50 +1,52 @@
+import { api } from '../store/api'
+import { store } from '../store'
+import { request as transportRequest } from './transport'
+
 export async function request(endpoint, options = {}) {
-  const {
-    token = localStorage.getItem('usof_auth_token'),
-    body,
-    responseType,
-    ...init
-  } = options
-  const headers = new Headers(init.headers)
-  if (token) headers.set('Authorization', `Bearer ${token}`)
-  const isJson =
-    body != null && !(body instanceof FormData) && typeof body !== 'string'
-  if (isJson) headers.set('Content-Type', 'application/json')
+  const { signal, ...init } = options
 
-  let response
-  try {
-    response = await fetch(`/api${endpoint}`, {
-      ...init,
-      headers,
-      body: isJson ? JSON.stringify(body) : body,
-    })
-  } catch (error) {
-    if (error.name === 'AbortError') throw error
-    throw new Error('Cannot connect to the server. Please try again.')
-  }
+  if (endpoint.startsWith('/auth') || init.responseType === 'blob' || init.body instanceof FormData) {
+    const result = await transportRequest(endpoint, { token: store.getState().auth.token, ...options })
 
-  if (response.ok && responseType === 'blob') return response.blob()
-  const data =
-    response.status === 204 ? null : await response.json().catch(() => null)
-  if (!response.ok) {
-    if (response.status === 401 && token) {
-      window.dispatchEvent(
-        new CustomEvent('usof:unauthorized', { detail: token }),
-      )
+    if (init.method && init.method !== 'GET' && !endpoint.startsWith('/auth')) {
+      store.dispatch(api.util.invalidateTags(['Users', 'Posts', 'Post', 'Favorites', 'Subscriptions']))
     }
-    const error = new Error(
-      data?.message || `Server error (${response.status})`,
-    )
-    error.status = response.status
-    throw error
+
+    return result
   }
-  return data
+
+  const session = store.getState().auth
+  const scope = `${session.token}:${session.user?.role || ''}`
+  const method = init.method || 'GET'
+  const operation = method === 'GET'
+    ? store.dispatch(api.endpoints.resource.initiate({ path: endpoint, scope }))
+    : store.dispatch(api.endpoints.change.initiate({ path: endpoint, ...init }))
+
+  try {
+    const data = await operation.unwrap()
+
+    if (signal?.aborted) throw new DOMException('Aborted', 'AbortError')
+
+    return data
+  } catch (failure) {
+    if (failure.name === 'AbortError') throw failure
+
+    const error = new Error(failure.message || 'Request failed')
+    error.status = failure.status
+
+    throw error
+  } finally {
+    operation.unsubscribe?.()
+    operation.reset?.()
+  }
 }
 
 export function queryString(params = {}) {
   const query = new URLSearchParams()
-  Object.entries(params).forEach(([key, value]) => {
+
+  Object.entries(params).sort(([a], [b]) => a.localeCompare(b)).forEach(([key, value]) => {
     if (value !== '' && value != null) query.set(key, value)
   })
+
   return query.size ? `?${query}` : ''
 }

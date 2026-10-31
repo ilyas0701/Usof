@@ -1,7 +1,7 @@
-import { useCallback, useState } from 'react'
+import { useState } from 'react'
 import { usersApi } from '../api/usersApi'
 import { useAuth } from '../hooks/useAuth'
-import useResource from '../hooks/useResource'
+import useApiResource from '../hooks/useApiResource'
 import { validateImages } from '../utils/format'
 import { navigate } from '../utils/navigation'
 import PageLayout from '../components/common/PageLayout'
@@ -24,6 +24,7 @@ function ProfileForm({ profile, onSaved }) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
+
   const handleChange = (event) =>
     setForm((current) => ({
       ...current,
@@ -133,14 +134,12 @@ function ProfileForm({ profile, onSaved }) {
 }
 
 export default function ProfilePage({ id }) {
-  const { user, token, logoutUser } = useAuth()
+  const { user, logoutUser } = useAuth()
   const [section, setSection] = useState(() => new URLSearchParams(window.location.search).get('tab') === 'posts' ? 'posts' : 'profile')
-  const profile = useResource(
-    useCallback((signal) => usersApi.get(id, signal), [id]),
-    token,
-  )
+  const profile = useApiResource(`/users/${id}`)
   const data = profile.data
   const isOwner = String(user?.userId) === String(id)
+
   return (
     <PageLayout title={isOwner ? 'My profile' : 'Profile'}>
       {isOwner && (
