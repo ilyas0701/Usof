@@ -13,10 +13,11 @@ const PAGE_SIZE = 10
 export default function ProfileQuestions({ authorId, isOwner, showSort = true }) {
   const [page, setPage] = useState(1)
   const [sort, setSort] = useState('date')
+  const [status, setStatus] = useState('')
   const [selectedCategories, setSelectedCategories] = useState([])
   const [categorySearch, setCategorySearch] = useState('')
   const categories = useApiResource('/categories', { skip: !isOwner })
-  const questions = useApiResource(`/posts${queryString({ author: authorId, page, pageSize: PAGE_SIZE, sort, categories: selectedCategories.length ? selectedCategories.join(',') : undefined })}`)
+  const questions = useApiResource(`/posts${queryString({ author: authorId, page, pageSize: PAGE_SIZE, sort, status: isOwner ? status : undefined, categories: selectedCategories.length ? selectedCategories.join(',') : undefined })}`)
 
   const categorySearchTerm = categorySearch.trim().replace(/^#/, '').toLowerCase()
   const matchingCategories = (categories.data || []).filter((item) =>
@@ -38,6 +39,17 @@ export default function ProfileQuestions({ authorId, isOwner, showSort = true })
           }}>
             <option value="date">Latest first</option>
             <option value="likes">Most liked</option>
+          </select>
+        </label>}
+        {isOwner && <label className={s.label}>
+          Status
+          <select className={s.select} value={status} onChange={(event) => {
+            setStatus(event.target.value)
+            setPage(1)
+          }}>
+            <option value="">All posts</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
           </select>
         </label>}
         {isOwner && <div>
@@ -69,7 +81,7 @@ export default function ProfileQuestions({ authorId, isOwner, showSort = true })
           <div>
             {questions.data.posts.map((question) => <QuestionCard key={question.id} question={question} />)}
             {!questions.data.posts.length && (
-              <p className={s.muted}>{selectedCategories.length ? 'No questions in these categories.' : isOwner ? 'You have no questions yet.' : 'This user has no published questions yet.'}</p>
+              <p className={s.muted}>{selectedCategories.length || status ? 'No questions match these filters.' : isOwner ? 'You have no questions yet.' : 'This user has no published questions yet.'}</p>
             )}
           </div>
           <Pagination page={page} total={questions.data.total} pageSize={PAGE_SIZE} onChange={setPage} />
