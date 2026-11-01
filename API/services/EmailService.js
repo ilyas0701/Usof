@@ -19,6 +19,17 @@ const transporter = nodemailer.createTransport({
 });
 
 class EmailService {
+    static async sendInvitation(email, token) {
+        const link = `${appConfig.frontendUrl.replace(/\/$/, "")}/accept-invitation?token=${encodeURIComponent(token)}`;
+        await transporter.sendMail({
+            from: `"USOF" <${emailConfig.user}>`,
+            to: email,
+            subject: "You are invited to USOF",
+            text: `Choose your login and password: ${link}\nThis link is valid for 24 hours.`,
+            html: `<p>You are invited to USOF.</p><p><a href="${escapeHtml(link)}">Create your account</a></p><p>This link is valid for 24 hours.</p>`
+        });
+    }
+
     static async sendPostNotification(email, post, type) {
         const events = {
             post_updated: "A post you follow was updated",

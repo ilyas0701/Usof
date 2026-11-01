@@ -140,6 +140,9 @@ add("get", "/api/admin/comments", "Admin", "Get all comments as an admin", {auth
 add("get", "/api/admin/likes", "Admin", "Get all reactions as an admin", {auth: true, response: array(reference("Like"))});
 add("delete", "/api/admin/likes/{id}", "Admin", "Delete a reaction as an admin", {auth: true, noContent: true});
 
+add("post", "/api/users/invitations", "Users", "Invite a user as an admin", {auth: true, description: "Sends a one-time email invitation valid for 24 hours. The account is created only after acceptance.", body: object({email: {type: "string", format: "email"}, role}, ["email", "role"]), response: reference("Message"), created: true});
+add("post", "/api/auth/accept-invitation", "Authentication", "Create an invited account and sign in", {description: "Email and role come from the invitation. Used and expired links are rejected.", body: object({token: string, login: string, password: {type: "string", format: "password", minLength: 3, maxLength: 155}, passwordConfirmation: {type: "string", format: "password"}}, ["token", "login", "password", "passwordConfirmation"]), response: object({token: string, user: reference("User")}), created: true});
+
 const openapi = {
     openapi: "3.0.3",
     info: {

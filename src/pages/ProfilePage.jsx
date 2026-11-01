@@ -157,8 +157,8 @@ export default function ProfilePage({ id }) {
       {data && (
         <>
           <div hidden={isOwner && section !== 'profile'}>
-          <section className={s.card}>
-            <div className={s.profile}>
+          <section className={`${s.card} ${s.profileSummary}`}>
+            <div className={s.profileIdentity}>
               {data.profile_picture ? (
                 <img
                   className={s.avatar}
@@ -170,27 +170,29 @@ export default function ProfilePage({ id }) {
                   {data.login.charAt(0).toUpperCase()}
                 </div>
               )}
-              <div>
+              <div className={s.profileDetails}>
                 <h2 className={s.title}>@{data.login}</h2>
-                <p className={s.muted}>{data.full_name}</p>
+                {data.full_name && <p className={s.muted}>{data.full_name}</p>}
                 <p className={s.muted}>
-                  {data.rating} reputation · {data.role}
+                  {data.rating} reputation{' '}<span className={s.profileBadge}>{data.role === 'admin' ? 'Admin' : 'User'}</span>
                 </p>
+                {isOwner && (
+              <p className={s.muted}>
+                {data.email}{' '}
+                <span className={data.email_verified ? s.profileBadge : undefined}>{data.email_verified ? 'Email verified' : 'Email not verified'}</span>
+              </p>
+                )}
               </div>
             </div>
             {isOwner && (
-              <>
-              <p className={s.muted}>
-                {data.email} ·{' '}
-                {data.email_verified ? 'Email verified' : 'Email not verified'}
-              </p>
+              <div className={s.profileLogout}>
               <Button variant="danger" size="small" onClick={() => {
                 logoutUser()
                 navigate('/')
               }}>
                 Log out
               </Button>
-              </>
+              </div>
             )}
           </section>
           {isOwner && (

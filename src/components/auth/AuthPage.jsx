@@ -17,6 +17,8 @@ export default function AuthPage({
   verificationToken = '',
   onNavigateHome,
   onLoginSuccess,
+  children,
+  title,
 }) {
   const { isAuthenticated } = useAuth()
   const [mode, setMode] = useState(initialMode)
@@ -53,7 +55,8 @@ export default function AuthPage({
 
       <main className={s.contentWrapper}>
         <div className={s.card}>
-          {isAuthenticated &&
+          {title && <h1 className={s.cardTitle}>{title}</h1>}
+          {children || (isAuthenticated &&
           mode !== 'verify-email' &&
           mode !== 'reset-password' ? (
             <UserProfileCard />
@@ -117,10 +120,10 @@ export default function AuthPage({
                 />
               )}
             </>
-          )}
+          ))}
         </div>
 
-        {!isAuthenticated && mode === 'login' && (
+        {!children && !isAuthenticated && mode === 'login' && (
           <button
             type="button"
             className={s.onboardingButton}
@@ -137,7 +140,7 @@ export default function AuthPage({
           </button>
         )}
 
-        {!isAuthenticated && mode === 'register' && (
+        {!children && !isAuthenticated && mode === 'register' && (
           <button
             type="button"
             className={s.onboardingButton}

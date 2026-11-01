@@ -10,6 +10,7 @@ import ProfilePage from './pages/ProfilePage'
 import DirectoryPage from './pages/DirectoryPage'
 import CategoryManagementPage from './pages/CategoryManagementPage'
 import UserManagementPage from './pages/UserManagementPage'
+import AcceptInvitationPage from './pages/AcceptInvitationPage'
 import PageLayout from './components/common/PageLayout'
 import Button from './components/Button/Button'
 import { navigate } from './utils/navigation'
@@ -71,9 +72,15 @@ function AppRoutes() {
     params.get('returnTo') ||
     (protectedPage ? pathname + search + location.hash : '/')
 
+  if (pathname === '/accept-invitation') {
+    return <AcceptInvitationPage token={params.get('token') || ''} />
+  }
+
   if (isAuth || (protectedPage && !isAuthenticated)) {
-    if (isAuthenticated && !isVerification && !isReset)
+    if (isAuthenticated && !isVerification && !isReset) {
       return <ProfilePage key={user.userId} id={String(user.userId)} />
+    }
+
     return (
       <AuthPage
         key={pathname + search}
@@ -91,25 +98,65 @@ function AppRoutes() {
       />
     )
   }
-  if (pathname === '/') return <HomePage key={search} onOpenAuth={openAuth} />
-  if (pathname === '/posts/new') return <PostEditorPage />
-  if (pathname === '/manage/categories') return <CategoryManagementPage />
-  if (pathname === '/manage/users') return <UserManagementPage />
-  let match = pathname.match(/^\/posts\/(\d+)\/edit$/)
+  if (pathname === '/') {
+    return <HomePage key={search} onOpenAuth={openAuth} />
+  }
+
+  if (pathname === '/posts/new') {
+    return <PostEditorPage />
+  }
+
+  if (pathname === '/manage/categories') {
+    return <CategoryManagementPage />
+  }
+
+  if (pathname === '/manage/users') {
+    return <UserManagementPage />
+  }
+
   const userEditMatch = pathname.match(/^\/manage\/users\/(\d+)\/edit$/)
-  if (userEditMatch) return <UserManagementPage key={pathname} id={userEditMatch[1]} />
-  if (match) return <PostEditorPage key={pathname} id={match[1]} />
+
+  if (userEditMatch) {
+    return <UserManagementPage key={pathname} id={userEditMatch[1]} />
+  }
+
+  const postEditMatch = pathname.match(/^\/posts\/(\d+)\/edit$/)
+
+  if (postEditMatch) {
+    return <PostEditorPage key={pathname} id={postEditMatch[1]} />
+  }
+
   const questionId = questionIdFromPath(pathname)
-  if (questionId) return <PostPage key={questionId} id={questionId} />
-  match = pathname.match(/^\/comments\/(\d+)$/)
-  if (match) return <PostPage key={pathname} commentId={match[1]} />
-  match = pathname.match(/^\/categories\/(\d+)$/)
-  if (match) return <PostListPage key={pathname} categoryId={match[1]} />
-  match = pathname.match(/^\/users\/(\d+)$/)
-  if (match) return <ProfilePage key={pathname + search} id={match[1]} />
-  if (pathname === '/users') return <DirectoryPage key={pathname} />
-  if (pathname === '/favorites' || pathname === '/subscriptions')
+
+  if (questionId) {
+    return <PostPage key={questionId} id={questionId} />
+  }
+
+  const commentMatch = pathname.match(/^\/comments\/(\d+)$/)
+
+  if (commentMatch) {
+    return <PostPage key={pathname} commentId={commentMatch[1]} />
+  }
+
+  const categoryMatch = pathname.match(/^\/categories\/(\d+)$/)
+
+  if (categoryMatch) {
+    return <PostListPage key={pathname} categoryId={categoryMatch[1]} />
+  }
+
+  const profileMatch = pathname.match(/^\/users\/(\d+)$/)
+
+  if (profileMatch) {
+    return <ProfilePage key={pathname + search} id={profileMatch[1]} />
+  }
+
+  if (pathname === '/users') {
+    return <DirectoryPage key={pathname} />
+  }
+
+  if (pathname === '/favorites' || pathname === '/subscriptions') {
     return <PostListPage key={pathname} collection={pathname.slice(1)} />
+  }
 
   return (
     <PageLayout title="Page not found" centered showBack={false}>

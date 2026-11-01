@@ -35,3 +35,5 @@ The interactive API reference is available at `/api/docs`, and its OpenAPI file 
 The development notes are in [docs/](docs/basic.md), and the Scalar addition is described in [Act: Creative](docs/creative.md). The database diagram is shown below.
 
 ![Database diagram](docs/img/db-diagram.jpg)
+
+Admins can invite users from Manage users using email and role. The recipient has 24 hours to choose a login and password; acceptance creates a verified account and signs them in. Invitation links are single-use.

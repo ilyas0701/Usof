@@ -19,7 +19,7 @@ export default function Modal({ isOpen, onClose, ariaLabel = 'Dialog', children 
       }
 
       if (e.key === 'Tab') {
-        const focusable = modalRef.current?.querySelectorAll('button:not([disabled]), a[href], input:not([disabled]), [tabindex]:not([tabindex="-1"])')
+        const focusable = modalRef.current?.querySelectorAll('button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')
         if (!focusable?.length) return
 
         const first = focusable[0]

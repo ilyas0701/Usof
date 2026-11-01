@@ -1,4 +1,6 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
+import { createPortal } from 'react-dom'
+import Modal from '../components/common/Modal'
 import { usersApi } from '../api/usersApi'
 import { useAuth } from '../hooks/useAuth'
 import useApiResource from '../hooks/useApiResource'
@@ -91,6 +93,44 @@ function UserEditor({ account, onSaved, onDeleted, onClose }) {
   </form>
 }
 
+function InviteUserForm() {
+  const [email, setEmail] = useState('')
+  const [role, setRole] = useState('user')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const [message, setMessage] = useState('')
+  const submit = async (event) => {
+    event.preventDefault()
+    if (busy) return
+    setBusy(true)
+    setError('')
+    setMessage('')
+    try {
+      const result = await usersApi.invite({email: email.trim(), role})
+      setMessage(result.message)
+      setEmail('')
+      setRole('user')
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setBusy(false)
+    }
+  }
+  return <form className={s.form} onSubmit={submit}>
+    <h2 className={s.title}>Invite user</h2>
+    <p className={s.muted}>The recipient will choose a login and password to create their account.</p>
+    {error && <InformationMessage type="error" description={error} />}
+    {message && <InformationMessage type="success" description={message} />}
+    <TextField label="Email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} required maxLength={255} disabled={busy} />
+    <label className={s.label}>Role
+      <select className={s.select} value={role} onChange={(event) => setRole(event.target.value)} disabled={busy}>
+        <option value="user">User</option><option value="admin">Admin</option>
+      </select>
+    </label>
+    <Button type="submit" variant="primary-black" loading={busy}>Send invitation</Button>
+  </form>
+}
+
 function UserManager() {
   const users = useApiResource('/users')
   const [query, setQuery] = useState('')
@@ -140,9 +180,22 @@ function UserEditPage({ id }) {
 }
 
 export default function UserManagementPage({ id }) {
+  const [inviteOpen, setInviteOpen] = useState(false)
+  const closeInvite = useCallback(() => setInviteOpen(false), [])
   const { user } = useAuth()
 
-  return <PageLayout title={id ? 'Edit user' : 'Manage users'}>
+  return <PageLayout title={id ? 'Edit user' : 'Manage users'} beforeHeading={!id && user?.role === 'admin' && (
+    <div className={s.inviteBanner}>
+      <p className={s.muted}>Invite someone to USOF</p>
+      <Button variant="primary-black" onClick={() => setInviteOpen(true)}>Invite user</Button>
+    </div>
+  )}>
+    {inviteOpen && createPortal(
+      <Modal isOpen onClose={closeInvite} ariaLabel="Invite user">
+        <InviteUserForm />
+      </Modal>, document.body,
+    )}
+
     {user?.role === 'admin' ? (id ? <UserEditPage id={id} /> : <UserManager />) : <p role="alert">Admin access required.</p>}
   </PageLayout>
 }

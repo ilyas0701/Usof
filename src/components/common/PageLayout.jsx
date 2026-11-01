@@ -5,7 +5,7 @@ import AccountMenu from './AccountMenu'
 import HeaderSearch from './HeaderSearch'
 import s from './Content.module.scss'
 
-export default function PageLayout({ title, children, actions, centered = false, showBack = true }) {
+export default function PageLayout({ title, children, actions, beforeHeading, centered = false, showBack = true }) {
   const { isAuthenticated } = useAuth()
 
   return (
@@ -29,6 +29,7 @@ export default function PageLayout({ title, children, actions, centered = false,
       <div className={s.yellowBackdrop} aria-hidden="true" />
       <div className={s.contentSurface}>
         <main className={`${s.main} ${centered ? s.centeredMain : ''}`}>
+          {beforeHeading}
           <div className={s.heading}>
             <div className={s.pageTitle}>
               <h1>{title}</h1>
