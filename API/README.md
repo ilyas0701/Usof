@@ -1,10 +1,14 @@
 # USOF Backend
 
-USOF is a question-and-answer service for developers. This repository contains its API, MySQL database setup, and an admin panel. Users can publish posts, comment, react with likes or dislikes, and build a rating. The project uses JavaScript, Node.js, Express, MySQL, and AdminJS.
+Q&A API built with Node.js, Express, MySQL and AdminJS.
 
-## Requirements and setup
+## Setup
 
-Install Node.js 22 or newer, npm, and MySQL. An SMTP account is needed for registration and password reset emails. Copy `.env.example` to `.env` and set the database, SMTP, URL, and secret values. `APP_URL` should point to this server, for example `http://localhost:3000`. `FRONTEND_URL` is used in email verification and password reset links. The MySQL account must be able to create the database on the first run.
+Requires Node.js 22.12+, MySQL and SMTP. Run from `API/`:
+
+1. Copy `.env.example` to `.env` and configure database, SMTP and secrets.
+2. Set `PORT=8888`, `APP_URL=http://localhost:8888`, `FRONTEND_URL=http://localhost:5173`.
+3. Run:
 
 ```bash
 npm install
@@ -12,28 +16,35 @@ npm run db:setup
 npm start
 ```
 
-`db:setup` creates the database tables and adds seed data. Later starts run the migrations automatically and do not erase existing data. To run only migrations, use `npm run db:migrate`. The API runs on the port from `.env`, or on port 3000 by default.
+Startup applies pending migrations. Seeds can be rerun without duplicates. MySQL credentials need permission to create the database. Stop the existing backend before starting another on the same port.
 
-## Using the API
+## Features
 
-Public routes include `GET /api/posts`, `GET /api/posts/:id`, and the category routes. Registration and login are available at `/api/auth/register` and `/api/auth/login`. Protected API requests use the login token in the `Authorization: Bearer <token>` header. An email must be verified before the user can log in. The API also supports password reset by email.
+- Registration, email verification, JWT login and password reset.
+- Posts with images, categories, comments, reactions and automatic rating.
+- Search, sorting, filters and pagination.
+- Favorites and email subscriptions.
+- Admin user/category management and invitations.
 
-Users can create posts, add comments and likes, upload avatars and post images, and manage their own content. Posts can be sorted by likes or date and filtered by category, date interval, and status. A signed-in user can save a post with `POST /api/posts/:id/favorite`, view saved posts with `GET /api/posts/favorites`, and remove one with `DELETE /api/posts/:id/favorite`. The saved list is private and supports `page` and `pageSize`. Likes and dislikes change the author's rating automatically. Locked posts and comments cannot receive new activity from regular users. The API logout endpoint responds successfully; the client must remove its access token.
+## Invitations
 
-Search posts with `GET /api/posts/search?q=word`. It checks titles and content without case sensitivity, puts title matches first, and supports the existing pagination and filters. `GET /api/posts?q=word` also works. Search follows the same rules for active and inactive posts as the normal post list.
+An admin sends email and role through `POST /api/users/invitations`. The recipient submits login and password to `POST /api/auth/accept-invitation`. Acceptance creates a verified account and returns an access token.
 
-Users can also follow posts with `POST /api/posts/:id/subscribe`, see followed posts at `GET /api/posts/subscriptions`, and stop following with `DELETE /api/posts/:id/subscribe`. When a post is updated, receives images or a comment, or is deleted, the server emails its subscribers at their verified addresses. A subscriber also receives an email for their own action. Email delivery needs working SMTP settings; failed deliveries are logged and do not undo the post action. The API does not keep a notification inbox or retry failed emails.
+Links expire after 24 hours. Only token hashes are stored. Acceptance deletes invitations for that email; delivery failure removes the new invitation. Expired records are not automatically deleted.
 
-The AdminJS panel is available at `/admin`. Only a verified user with the `admin` role can sign in. Admins can manage users, posts, categories, comments, and likes. New users start with the `user` role; an admin can change the role afterward. In the panel, editing an existing post or comment changes only its status, while deletion remains available. A new post still needs at least one category ID.
+## Access
 
-The interactive API reference is available at `/api/docs`, and its OpenAPI file is at `/api/openapi.json`. Open the reference to see request bodies and responses and to send requests from the browser. Log in first, then enter the returned token in the Bearer authentication field for protected routes. The Scalar page loads its JavaScript from a CDN, so the browser needs an internet connection to display it.
+Protected requests use `Authorization: Bearer <token>`. Login requires a verified email. Only the author or an admin can change comment status, lock or delete it. Comment text cannot be edited.
 
-## Project structure
+Post images can be uploaded only by the author. Locked posts/comments reject new replies and reactions from regular users. Logout removes the client token; it does not revoke the JWT. Password reset links remain reusable until expiry.
 
-`routes/` defines the API paths, `controllers/` handles requests, `services/` contains business rules, and `models/` runs database queries. `middleware/` checks authentication, roles, and uploaded files. `database/migrations/` defines the schema, `database/seeds/` contains example data, and `admin/` connects AdminJS to the application. Uploaded files are stored locally in `uploads/`.
+## Reference
 
-The development notes are in [docs/](docs/basic.md), and the Scalar addition is described in [Act: Creative](docs/creative.md). The database diagram is shown below.
+- Admin panel: `/admin`, verified admin account required.
+- API reference: `/api/docs` (Scalar requires internet).
+- OpenAPI: `/api/openapi.json`.
+- [Implementation notes](docs/basic.md)
 
 ![Database diagram](docs/img/db-diagram.jpg)
 
-Admins can invite users from Manage users using email and role. The recipient has 24 hours to choose a login and password; acceptance creates a verified account and signs them in. Invitation links are single-use.
+The diagram covers the original schema; later migrations add favorites, subscriptions and invitations.

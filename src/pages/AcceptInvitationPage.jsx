@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { request } from '../api/client'
+import { authApi } from '../api/authApi'
+import { validateCredentials } from '../utils/authValidation'
 import { useAuth } from '../hooks/useAuth'
 import { navigate } from '../utils/navigation'
 import AuthPage from '../components/auth/AuthPage'
@@ -8,7 +9,6 @@ import Button from '../components/Button/Button'
 import InformationMessage from '../components/InformationMessage/InformationMessage'
 import s from '../components/auth/AuthForm.module.scss'
 
-const LOGIN_REGEX = /^[a-zA-Z0-9_]{3,255}$/
 const INVITATION_TOKEN_REGEX = /^[a-f0-9]{64}$/
 
 export default function AcceptInvitationPage({ token }) {
@@ -31,25 +31,7 @@ export default function AcceptInvitationPage({ token }) {
   }
 
   const validate = () => {
-    const nextErrors = {}
-
-    if (!formData.login.trim()) {
-      nextErrors.login = 'Enter your username'
-    } else if (!LOGIN_REGEX.test(formData.login.trim())) {
-      nextErrors.login = 'Use 3 to 255 characters: Latin letters, digits, and underscores'
-    }
-
-    if (!formData.password) {
-      nextErrors.password = 'Enter your password'
-    } else if (formData.password.length < 3) {
-      nextErrors.password = 'Password must be at least 3 characters long'
-    }
-
-    if (!formData.passwordConfirmation) {
-      nextErrors.passwordConfirmation = 'Confirm your password'
-    } else if (formData.password !== formData.passwordConfirmation) {
-      nextErrors.passwordConfirmation = 'Passwords do not match'
-    }
+    const nextErrors = validateCredentials(formData)
 
     setErrors(nextErrors)
     return Object.keys(nextErrors).length === 0
@@ -66,14 +48,11 @@ export default function AcceptInvitationPage({ token }) {
     setServerError('')
 
     try {
-      const result = await request('/auth/accept-invitation', {
-        method: 'POST',
-        body: {
-          token,
-          login: formData.login.trim(),
-          password: formData.password,
-          passwordConfirmation: formData.passwordConfirmation,
-        },
+      const result = await authApi.acceptInvitation({
+        token,
+        login: formData.login.trim(),
+        password: formData.password,
+        passwordConfirmation: formData.passwordConfirmation,
       })
 
       loginUser(result.token, result.user)

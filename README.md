@@ -1,6 +1,6 @@
 # USOF
 
-Q&A platform for developers: posts with images, nested comments, reactions, search, filters, favorites and email subscriptions. Includes email verification and admin moderation.
+Q&A platform for developers: posts with images, nested comments, reactions, search, filters, favorites and email subscriptions. Includes email verification, admin moderation and email invitations.
 
 **Stack:** React, Redux Toolkit, RTK Query, SCSS, Node.js, Express, MySQL, AdminJS.
 
@@ -24,12 +24,11 @@ Requires Node.js 22.12+, MySQL and SMTP credentials.
    npm run dev
    ```
 
-Frontend: [localhost:5173](http://localhost:5173). AdminJS: [localhost:8888/admin](http://localhost:8888/admin), admin account required. Vite proxies only `/api` and `/uploads`.
+Frontend: [localhost:5173](http://localhost:5173). AdminJS: [localhost:8888/admin](http://localhost:8888/admin), admin account required.
 
 ## Checks
 
 ```bash
-npm run lint
 npm run build
 ```
 
@@ -37,3 +36,5 @@ npm run build
 
 - `src/` — interface; `src/store/` — Redux state and request cache; `API/` — backend.
 - [Backend setup](API/README.md)
+- [Frontend notes](docs/basic.md)
+- [API coverage](docs/api-coverage.md)

@@ -135,8 +135,9 @@ function UserManager() {
   const users = useApiResource('/users')
   const [query, setQuery] = useState('')
   const [limit, setLimit] = useState(20)
+  const searchTerm = query.trim().toLowerCase()
   const matching = (users.data || []).filter((item) =>
-    [item.login, item.full_name, item.email].some((value) => value?.toLowerCase().includes(query.trim().toLowerCase())),
+    [item.login, item.full_name, item.email].some((value) => value?.toLowerCase().includes(searchTerm)),
   )
 
   return <div className={s.form}>

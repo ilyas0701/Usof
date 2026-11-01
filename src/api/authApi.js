@@ -5,6 +5,10 @@ function request(endpoint, options = {}) {
 }
 
 export const authApi = {
+  acceptInvitation(body) {
+    return request('/accept-invitation', { method: 'POST', body })
+  },
+
   async login({ login, password }) {
     const data = await request('/login', {
       method: 'POST',

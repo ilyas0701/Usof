@@ -24,7 +24,8 @@ export default function FilterDrawer({
   const drawerRef = useRef(null)
   const closeRef = useRef(null)
   const [categorySearch, setCategorySearch] = useState('')
-  const matchingTags = popularTags.filter((tag) => tag.toLowerCase().includes(categorySearch.trim().replace(/^#/, '').toLowerCase()))
+  const categorySearchTerm = categorySearch.trim().replace(/^#/, '').toLowerCase()
+  const matchingTags = popularTags.filter((tag) => tag.toLowerCase().includes(categorySearchTerm))
 
   useEffect(() => {
     if (!isOpen || inline) return

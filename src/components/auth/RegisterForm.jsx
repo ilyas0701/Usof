@@ -5,7 +5,8 @@ import InformationMessage from '../InformationMessage/InformationMessage'
 import { authApi } from '../../api/authApi'
 import s from './AuthForm.module.scss'
 
-const LOGIN_REGEX = /^[a-zA-Z0-9_]{3,255}$/
+import { validateCredentials } from '../../utils/authValidation'
+
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 export default function RegisterForm({ onSwitchToLogin }) {
@@ -32,30 +33,12 @@ export default function RegisterForm({ onSwitchToLogin }) {
   }
 
   const validate = () => {
-    const newErrors = {}
-
-    if (!formData.login.trim()) {
-      newErrors.login = 'Enter your username'
-    } else if (!LOGIN_REGEX.test(formData.login.trim())) {
-      newErrors.login = 'Use 3 to 255 characters: Latin letters, digits, and underscores'
-    }
+    const newErrors = validateCredentials(formData)
 
     if (!formData.email.trim()) {
       newErrors.email = 'Enter your email'
     } else if (!EMAIL_REGEX.test(formData.email.trim())) {
       newErrors.email = 'Enter a valid email address'
-    }
-
-    if (!formData.password) {
-      newErrors.password = 'Enter your password'
-    } else if (formData.password.length < 3) {
-      newErrors.password = 'Password must be at least 3 characters long'
-    }
-
-    if (!formData.passwordConfirmation) {
-      newErrors.passwordConfirmation = 'Confirm your password'
-    } else if (formData.password !== formData.passwordConfirmation) {
-      newErrors.passwordConfirmation = 'Passwords do not match'
     }
 
     setErrors(newErrors)
@@ -64,7 +47,7 @@ export default function RegisterForm({ onSwitchToLogin }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!validate()) return
+    if (submitting || !validate()) return
 
     setSubmitting(true)
     setServerError('')

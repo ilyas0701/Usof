@@ -18,8 +18,9 @@ export default function ProfileQuestions({ authorId, isOwner, showSort = true })
   const categories = useApiResource('/categories', { skip: !isOwner })
   const questions = useApiResource(`/posts${queryString({ author: authorId, page, pageSize: PAGE_SIZE, sort, categories: selectedCategories.length ? selectedCategories.join(',') : undefined })}`)
 
+  const categorySearchTerm = categorySearch.trim().replace(/^#/, '').toLowerCase()
   const matchingCategories = (categories.data || []).filter((item) =>
-    item.title.toLowerCase().includes(categorySearch.trim().replace(/^#/, '').toLowerCase()))
+    item.title.toLowerCase().includes(categorySearchTerm))
   const toggleCategory = (id) => {
     setSelectedCategories((current) => current.includes(id) ? current.filter((value) => value !== id) : [...current, id])
     setPage(1)
