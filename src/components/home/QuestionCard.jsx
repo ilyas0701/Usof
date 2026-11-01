@@ -146,7 +146,7 @@ export default function QuestionCard({ question, onTagClick, onChange }) {
           </div>, document.body,
         )}
       </div>
-      {user?.role === 'admin' && (
+      {(user?.role === 'admin' || (isAuthenticated && String(user.userId) === String(question.author_id))) && (
         <a
           href={`/posts/${question.id}/edit`}
           className={s.editPost}

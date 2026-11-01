@@ -19,15 +19,26 @@ const transporter = nodemailer.createTransport({
 });
 
 class EmailService {
+    static async sendLink(message, link) {
+        try {
+            await transporter.sendMail(message);
+            return true;
+        } catch (error) {
+            console.error("Email service unavailable", {code: error.code});
+            console.log(`Email fallback for ${message.to}: ${link}`);
+            return false;
+        }
+    }
+
     static async sendInvitation(email, token) {
         const link = `${appConfig.frontendUrl.replace(/\/$/, "")}/accept-invitation?token=${encodeURIComponent(token)}`;
-        await transporter.sendMail({
+        return this.sendLink({
             from: `"USOF" <${emailConfig.user}>`,
             to: email,
             subject: "You are invited to USOF",
             text: `Choose your login and password: ${link}\nThis link is valid for 24 hours.`,
             html: `<p>You are invited to USOF.</p><p><a href="${escapeHtml(link)}">Create your account</a></p><p>This link is valid for 24 hours.</p>`
-        });
+        }, link);
     }
 
     static async sendPostNotification(email, post, type) {
@@ -59,7 +70,7 @@ class EmailService {
         const verificationLink =
             `${frontendUrl}/verify-email?token=${encodeURIComponent(verificationToken)}`;
 
-        await transporter.sendMail({
+        return this.sendLink({
             from: `"USOF" <${emailConfig.user}>`,
             to: email,
             subject: "Verify your email",
@@ -69,7 +80,7 @@ class EmailService {
                 <p>Click the link below to verify your email:</p>
                 <a href="${verificationLink}" target="_blank">Verify email</a>
             `
-        });
+        }, verificationLink);
     }
 
     static async sendResetToken(email, token) {
@@ -77,7 +88,7 @@ class EmailService {
         const resetLink =
             `${frontendUrl}/password-reset?token=${encodeURIComponent(token)}`;
 
-        await transporter.sendMail({
+        return this.sendLink({
             from: `"USOF" <${emailConfig.user}>`,
             to: email,
             subject: "Reset your password",
@@ -89,7 +100,7 @@ class EmailService {
                 <a href="${resetLink}" target="_blank">Reset password</a>
                 <p>If you did not request a password reset, you can ignore this email.</p>
             `
-        });
+        }, resetLink);
     }
 }
 

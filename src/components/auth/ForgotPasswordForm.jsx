@@ -69,7 +69,7 @@ export default function ForgotPasswordForm({ onBackToLogin }) {
           <InformationMessage
             type="success"
             title="Request sent"
-            description={`${successMessage} Follow the link in the email to set a new password.`}
+            description={successMessage}
           />
 
           <div className={s.actions}>

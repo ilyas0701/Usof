@@ -15,6 +15,7 @@ import PageLayout from './components/common/PageLayout'
 import Button from './components/Button/Button'
 import { navigate } from './utils/navigation'
 import SiteMenu from './components/common/SiteMenu'
+import Footer from './components/common/Footer'
 import { questionIdFromPath } from '../shared/questionUrls'
 
 function readLocation() {
@@ -171,6 +172,7 @@ export default function App() {
   return (
     <AuthSession>
       <AppRoutes />
+      <Footer />
       <SiteMenu />
     </AuthSession>
   )

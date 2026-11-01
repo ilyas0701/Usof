@@ -31,13 +31,14 @@ class InvitationService {
         const token = randomBytes(32).toString("hex");
         const hash = hashToken(token);
         await InvitationModel.create(hash, email, role);
-        try {
-            await EmailService.sendInvitation(email, token);
-        } catch {
-            await InvitationModel.remove(hash);
-            throw new HttpError(502, "Could not send invitation. Please try again.");
-        }
-        return {message: "Invitation sent. The link is valid for 24 hours."};
+        const emailSent = await EmailService.sendInvitation(email, token);
+
+        return {
+            emailSent,
+            message: emailSent
+                ? "Invitation sent. The link is valid for 24 hours."
+                : "Email service is unavailable. The invitation link was logged in the backend console. It is valid for 24 hours."
+        };
     }
 
     static async accept(data = {}) {

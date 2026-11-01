@@ -13,7 +13,7 @@ function readFilters() {
       activeTab: ['all', 'popular', 'disliked'].includes(saved.activeTab) ? saved.activeTab : 'all',
       dateFrom: /^\d{4}-\d{2}-\d{2}$/.test(saved.dateFrom) ? saved.dateFrom : '',
       dateTo: /^\d{4}-\d{2}-\d{2}$/.test(saved.dateTo) ? saved.dateTo : '',
-      status: saved.status === 'inactive' ? 'inactive' : 'active',
+      status: ['active', 'inactive', 'all'].includes(saved.status) ? saved.status : 'active',
     }
   } catch {
     return defaults

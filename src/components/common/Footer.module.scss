@@ -1,0 +1,35 @@
+.footer {
+  padding: 32px 20px;
+  border-radius: 40px 40px 0 0;
+  background: var(--c-header-gradient);
+  color: var(--c-dark-blue-800);
+}
+
+.inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.logo {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  line-height: 1;
+}
+
+.copyright {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+@media (max-width: 576px) {
+  .footer {
+    padding: 24px 20px;
+    border-radius: 28px 28px 0 0;
+  }
+}

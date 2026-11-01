@@ -61,10 +61,12 @@ class AuthController {
         try {
             const {email} = req.body ?? {};
 
-            await AuthService.resetRequest(email);
+            const emailSent = await AuthService.resetRequest(email);
 
             return res.status(200).json({
-                message: "If an account with this email exists, password reset instructions have been sent."
+                message: emailSent === false
+                    ? "Email service is unavailable. The password reset link was logged in the backend console. Contact the administrator."
+                    : "If an account with this email exists, password reset instructions have been sent."
             });
         } catch (error) {
             return sendErrorResponse(res, error);

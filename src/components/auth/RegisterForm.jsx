@@ -74,7 +74,9 @@ export default function RegisterForm({ onSwitchToLogin }) {
         <InformationMessage
           type="success"
           title="Registration successful!"
-          description={`We sent a verification email to ${formData.email}. Check your inbox and spam folder, then follow the link to activate your account before logging in.`}
+          description={successInfo.emailSent === false
+            ? 'Your account was created, but the email service is unavailable. The verification link was logged in the backend console. Contact the administrator to activate your account.'
+            : `We sent a verification email to ${formData.email}. Check your inbox and spam folder, then follow the link to activate your account before logging in.`}
         />
 
         <div className={s.actions}>

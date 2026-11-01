@@ -17,7 +17,7 @@ import AccountMenu from '../components/common/AccountMenu'
 import HeaderSearch from '../components/common/HeaderSearch'
 
 export default function HomePage({ onOpenAuth }) {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, user } = useAuth()
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false)
   const [desktopFilters, setDesktopFilters] = useState(() => window.matchMedia('(min-width: 1024px)').matches)
   useEffect(() => {
@@ -30,7 +30,8 @@ export default function HomePage({ onOpenAuth }) {
   const dispatch = useDispatch()
   const { selectedTags, activeTab, dateFrom, dateTo, status } = useSelector((state) => state.filters)
   const [page, setPage] = useState(1)
-  const visibleStatus = isAuthenticated ? status : 'active'
+  const isAdmin = user?.role === 'admin'
+  const visibleStatus = isAdmin && status !== 'active' ? 'all' : 'active'
   const [debouncedQuery, setDebouncedQuery] = useState(searchQuery.trim())
   const categories = useApiResource('/categories')
 
@@ -47,8 +48,8 @@ export default function HomePage({ onOpenAuth }) {
     sort: activeTab === 'popular' ? 'likes' : activeTab === 'disliked' ? 'dislikes' : debouncedQuery ? 'relevance' : 'date',
     q: debouncedQuery || undefined,
     categories: categoryIds.length ? categoryIds.join(',') : undefined,
-    dateFrom, dateTo, status: visibleStatus,
-  })}`, { skip: !categories.data })
+    dateFrom, dateTo, status: visibleStatus === 'all' ? undefined : visibleStatus,
+  })}`, { skip: !categories.data, keepPreviousData: true })
   const changeFilter = (name) => (value) => {
     dispatch(filterChanged({ name, value }))
     setPage(1)
@@ -233,7 +234,7 @@ export default function HomePage({ onOpenAuth }) {
                     {(dateFrom || dateTo || visibleStatus !== 'active') && (
                       <span className={s.activeFilterChip}>
                         {dateFrom || 'Any date'} — {dateTo || 'Today'} ·{' '}
-                        {visibleStatus}
+                        {visibleStatus === 'all' ? 'Including inactive posts' : visibleStatus}
                       </span>
                     )}
                   </div>
@@ -249,7 +250,7 @@ export default function HomePage({ onOpenAuth }) {
               )}
             </div>
 
-            <div className={s.questionList}>
+            <div className={s.questionList} aria-busy={feed.fetching}>
               <ResourceState
                 loading={categories.loading || feed.loading}
                 error={categories.error || feed.error}
@@ -312,7 +313,7 @@ export default function HomePage({ onOpenAuth }) {
         onDateToChange={changeFilter('dateTo')}
         status={visibleStatus}
         onStatusChange={changeFilter('status')}
-        isAuthenticated={isAuthenticated}
+        isAdmin={isAdmin}
         onResetFilters={handleResetFilters}
       />
             </div>

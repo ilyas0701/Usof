@@ -52,9 +52,9 @@ class AuthService {
             email
         });
 
-        await this.sendVerificationEmail(user.id, user.email);
+        const emailSent = await this.sendVerificationEmail(user.id, user.email);
 
-        return user;
+        return {...user, emailSent};
     }
 
     static async sendVerificationEmail(userId, email) {
@@ -72,7 +72,7 @@ class AuthService {
         );
 
         await UserModel.setVerificationToken(userId, email, createHash("sha256").update(verificationToken).digest("hex"));
-        await EmailService.sendVerificationEmail(
+        return EmailService.sendVerificationEmail(
             email,
             verificationToken
         );
@@ -159,7 +159,7 @@ class AuthService {
             }
         );
 
-        await EmailService.sendResetToken(email, token);
+        return EmailService.sendResetToken(email, token);
     }
 
     static async resetPassword(token, passwords = {}) {

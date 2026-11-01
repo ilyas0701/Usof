@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { authApi } from '../../api/authApi'
 import Button from '../Button/Button'
 import InformationMessage from '../InformationMessage/InformationMessage'
@@ -6,6 +6,7 @@ import Loader from '../Loader/Loader'
 import s from './AuthForm.module.scss'
 
 export default function VerifyEmail({ token, onContinue }) {
+  const verificationRequest = useRef(null)
   const [result, setResult] = useState({
     status: token ? 'loading' : 'error',
     message: token ? '' : 'This verification link is missing its token.',
@@ -14,17 +15,23 @@ export default function VerifyEmail({ token, onContinue }) {
   useEffect(() => {
     if (!token) return
 
-    const controller = new AbortController()
+    let active = true
 
-    authApi.verifyEmail(token, controller.signal)
-      .then(() => setResult({ status: 'success', message: '' }))
+    if (verificationRequest.current?.token !== token) {
+      verificationRequest.current = { token, promise: authApi.verifyEmail(token) }
+    }
+
+    verificationRequest.current.promise
+      .then(() => {
+        if (active) setResult({ status: 'success', message: '' })
+      })
       .catch((error) => {
-        if (error.name !== 'AbortError') {
+        if (active) {
           setResult({ status: 'error', message: error.message })
         }
       })
 
-    return () => controller.abort()
+    return () => { active = false }
   }, [token])
 
   return (

@@ -19,7 +19,7 @@ export default function FilterDrawer({
   onDateToChange,
   status,
   onStatusChange,
-  isAuthenticated,
+  isAdmin = false,
 }) {
   const drawerRef = useRef(null)
   const closeRef = useRef(null)
@@ -179,20 +179,16 @@ export default function FilterDrawer({
               />
             </label>
           </div>
-          {isAuthenticated && (
-            <div className={s.group}>
-              <label className={s.dateLabel}>
-                Status
-                <select
-                  value={status}
-                  onChange={(event) => onStatusChange(event.target.value)}
-                >
-                  <option value="active">Active</option>
-                  <option value="inactive">My inactive posts</option>
-                </select>
-              </label>
-            </div>
-          )}
+          {isAdmin ? (
+            <label className={s.checkboxLabel}>
+              <input
+                type="checkbox"
+                checked={status === 'all'}
+                onChange={(event) => onStatusChange(event.target.checked ? 'all' : 'active')}
+              />
+              Show inactive posts
+            </label>
+          ) : null}
 
         </div>
 
