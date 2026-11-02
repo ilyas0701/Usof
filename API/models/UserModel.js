@@ -5,7 +5,7 @@ export const ratingExpression = `CAST(COALESCE((
     FROM DbLike l
     LEFT JOIN DbPost p ON p.id = l.post_id
     LEFT JOIN DbComment c ON c.id = l.comment_id
-    WHERE p.author_id = u.id OR c.author_id = u.id
+    WHERE p.author_id = u.id OR (c.author_id = u.id AND c.deleted_by IS NULL)
 ), 0) AS SIGNED)`;
 
 const ratingQuery = `${ratingExpression} AS rating`;

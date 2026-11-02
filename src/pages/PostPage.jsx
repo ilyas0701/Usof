@@ -323,18 +323,7 @@ export default function PostPage({ id, commentId }) {
                     ),
                   }))
                 }
-                onDelete={(id) =>
-                  detail.setData((current) => ({
-                    ...current,
-                    comments: current.comments
-                      .filter((item) => item.id !== id)
-                      .map((item) =>
-                        String(item.parent_id) === String(id)
-                          ? { ...item, parent_id: null }
-                          : item,
-                      ),
-                  }))
-                }
+
               />
             ))}
           </section>

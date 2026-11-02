@@ -464,7 +464,7 @@ class PostService {
         const text = validText(content, "content", 65535);
         if (parentId !== null) {
             const parent = await CommentModel.findById(validId(parentId));
-            if (!parent || (parent.status !== "active" && user.role !== "admin")) {
+            if (!parent || parent.deleted_by || (parent.status !== "active" && user.role !== "admin")) {
                 throw new HttpError(404, "Parent comment does not exist");
             }
             if (String(parent.post_id) !== String(post.id)) {

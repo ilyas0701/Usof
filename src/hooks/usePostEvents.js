@@ -20,7 +20,10 @@ export default function usePostEvents(postId, token, onChange) {
           signal: controller.signal,
         })
         if (!response.ok) {
-          if ([401, 403, 404].includes(response.status)) reconnect = false
+          if ([401, 403, 404].includes(response.status)) {
+            reconnect = false
+            await refresh(controller.signal, false)
+          }
           if (response.status === 401 && token) {
             window.dispatchEvent(
               new CustomEvent('usof:unauthorized', { detail: token }),
