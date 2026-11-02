@@ -20,7 +20,7 @@ export default function QuestionCard({ question, onTagClick, onChange }) {
     return () => window.clearTimeout(timeout)
   }, [shareMessage])
   const path = questionPath(question.id, question.title)
-  const author = question.author_login || 'removed'
+  const author = question.author_id ? (question.author_login || 'User') : 'Deleted user'
 
   const handleAuthor = () => {
     if (!question.author_id) return

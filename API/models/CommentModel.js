@@ -3,7 +3,7 @@ import pool from "../database/connection.js";
 class CommentModel {
     static async findAll() {
         const [rows] = await pool.execute(
-            `SELECT id, post_id, parent_id, author_id, publish_date, content, status, is_locked
+            `SELECT id, post_id, parent_id, author_id, publish_date, content, status, is_locked, deleted_by
              FROM DbComment ORDER BY publish_date DESC, id DESC`
         );
 
@@ -12,7 +12,7 @@ class CommentModel {
 
     static async findById(id) {
         const [rows] = await pool.execute(
-            `SELECT id, post_id, parent_id, author_id, publish_date, content, status, is_locked
+            `SELECT id, post_id, parent_id, author_id, publish_date, content, status, is_locked, deleted_by
              FROM DbComment WHERE id = ?`,
             [id]
         );
@@ -31,10 +31,10 @@ class CommentModel {
         return result.affectedRows > 0;
     }
 
-    static async delete(id) {
+    static async delete(id, deletedBy) {
         const [result] = await pool.execute(
-            `DELETE FROM DbComment WHERE id = ?`,
-            [id]
+            `UPDATE DbComment SET content = '', deleted_by = ? WHERE id = ? AND deleted_by IS NULL`,
+            [deletedBy, id]
         );
 
         return result.affectedRows > 0;

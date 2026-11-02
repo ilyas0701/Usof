@@ -134,7 +134,7 @@ export default function PostPage({ id, commentId }) {
                   @{data.post.author_login}
                 </a>
               ) : (
-                <span>removed</span>
+                <span>Deleted user</span>
               )}
               <time dateTime={data.post.publish_date}>
                 {formatDate(data.post.publish_date)}

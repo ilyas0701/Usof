@@ -439,10 +439,10 @@ class PostModel {
 
     static async findComments(id, includeInactive = false) {
         const [rows] = await pool.execute(
-            `SELECT c.id, c.post_id, c.parent_id, c.author_id, c.publish_date, c.content, c.status, c.is_locked,
+            `SELECT c.id, c.post_id, c.parent_id, c.author_id, c.publish_date, c.content, c.status, c.is_locked, c.deleted_by,
                 u.login AS author_login
              FROM DbComment c LEFT JOIN DbUser u ON u.id = c.author_id
-             WHERE c.post_id = ? ${includeInactive ? "" : "AND c.status = 'active'"}
+             WHERE c.post_id = ? ${includeInactive ? "" : "AND (c.status = 'active' OR c.deleted_by IS NOT NULL)"}
              ORDER BY c.publish_date ASC, c.id ASC`,
             [id]
         );

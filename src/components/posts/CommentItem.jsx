@@ -18,7 +18,6 @@ export default function CommentItem({
   nextDepth = 0,
   onReplyCreated,
   onUpdate,
-  onDelete,
 }) {
   const { user, isAuthenticated } = useAuth()
   const [busy, setBusy] = useState(false)
@@ -94,7 +93,7 @@ export default function CommentItem({
           </a>
         ) : (
           <span>
-            {comment.author_login ? `@${comment.author_login}` : comment.author_id ? `User #${comment.author_id}` : 'removed'}
+            {comment.author_login ? `@${comment.author_login}` : comment.author_id ? `User #${comment.author_id}` : 'Deleted user'}
           </span>
         )}
         <a
@@ -109,8 +108,8 @@ export default function CommentItem({
         {comment.status === 'inactive' && <span className={cardStyles.inactiveStatus}>Inactive</span>}
       </div>
       {error && <InformationMessage type="error" description={error} />}
-      <p className={s.text}>{comment.content}</p>
-      <div className={s.actions}>
+      <p className={s.text}>{comment.deleted_by ? (comment.deleted_by === 'admin' ? 'Comment deleted by an administrator.' : 'Comment deleted by the user.') : comment.content}</p>
+      {!comment.deleted_by && <div className={s.actions}>
         <Reactions
           resource="comments"
           id={comment.id}
@@ -154,13 +153,13 @@ export default function CommentItem({
               label="comment"
               onDelete={async () => {
                 await commentsApi.remove(comment.id)
-                onDelete(comment.id)
+                onUpdate({ ...comment, content: '', deleted_by: user?.role === 'admin' ? 'admin' : 'user' })
               }}
             />
           </>
         )}
-      </div>
-      {replying && (
+      </div>}
+      {!comment.deleted_by && replying && (
         <form className={`${s.form} ${s.inlineReplyForm}`} onSubmit={submitReply}>
           <label className={s.label}>
             Your reply

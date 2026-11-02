@@ -24,7 +24,7 @@ class CommentService {
 
         await PostService.findById(comment.post_id, user);
 
-        if (comment.status === "inactive" && user?.role !== "admin" &&
+        if (!comment.deleted_by && comment.status === "inactive" && user?.role !== "admin" &&
             String(user?.userId) !== String(comment.author_id)) {
             throw new HttpError(404, "Comment does not exist");
         }
@@ -39,6 +39,7 @@ class CommentService {
 
     static async createLike(id, user, type) {
         const comment = await this.findById(id, user);
+        if (comment.deleted_by) throw new HttpError(410, "Comment has been deleted");
         const post = await PostService.findById(comment.post_id, user);
 
         if ((comment.status !== "active" || post.status !== "active") && user.role !== "admin") {
@@ -70,7 +71,7 @@ class CommentService {
     static async update(id, user, data = {}) {
         const comment = await CommentModel.findById(validId(id));
 
-        if (!comment) {
+        if (!comment || comment.deleted_by) {
             throw new HttpError(404, "Comment does not exist");
         }
 
@@ -124,7 +125,7 @@ class CommentService {
             throw new HttpError(403, "You cannot delete this comment");
         }
 
-        await CommentModel.delete(comment.id);
+        await CommentModel.delete(comment.id, user.role === "admin" ? "admin" : "user");
         publishPostEvent(comment.post_id);
         await UserModel.refreshRatings(comment.author_id);
     }
@@ -132,7 +133,7 @@ class CommentService {
     static async deleteLike(id, user) {
         const comment = await CommentModel.findById(validId(id));
 
-        if (!comment) {
+        if (!comment || comment.deleted_by) {
             throw new HttpError(404, "Comment does not exist");
         }
 
