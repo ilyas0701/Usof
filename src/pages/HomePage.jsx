@@ -36,7 +36,7 @@ export default function HomePage({ onOpenAuth }) {
   const { selectedTags, activeTab, dateFrom, dateTo, status } = useSelector((state) => state.filters)
   const [page, setPage] = useState(1)
   const isAdmin = user?.role === 'admin'
-  const visibleStatus = isAdmin && status !== 'active' ? 'all' : 'active'
+  const visibleStatus = isAdmin && status !== 'active' ? 'inactive' : 'active'
   const [debouncedQuery, setDebouncedQuery] = useState(searchQuery.trim())
   const categories = useApiResource('/categories')
 
@@ -54,7 +54,7 @@ export default function HomePage({ onOpenAuth }) {
     sort: activeTab === 'popular' ? 'likes' : activeTab === 'disliked' ? 'dislikes' : debouncedQuery ? 'relevance' : 'date',
     q: debouncedQuery || undefined,
     categories: categoryIds.length ? categoryIds.join(',') : undefined,
-    dateFrom, dateTo, status: visibleStatus === 'all' ? undefined : visibleStatus,
+    dateFrom, dateTo, status: visibleStatus,
   })}`, { skip: !categories.data, keepPreviousData: true })
   const changeFilter = (name) => (value) => {
     dispatch(filterChanged({ name, value }))
@@ -240,7 +240,7 @@ export default function HomePage({ onOpenAuth }) {
                     {(dateFrom || dateTo || visibleStatus !== 'active') && (
                       <span className={s.activeFilterChip}>
                         {dateFrom || 'Any date'} — {dateTo || 'Today'} ·{' '}
-                        {visibleStatus === 'all' ? 'Including inactive posts' : visibleStatus}
+                        {visibleStatus === 'inactive' ? 'Inactive posts only' : visibleStatus}
                       </span>
                     )}
                   </div>

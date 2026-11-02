@@ -183,10 +183,10 @@ export default function FilterDrawer({
             <label className={s.checkboxLabel}>
               <input
                 type="checkbox"
-                checked={status === 'all'}
-                onChange={(event) => onStatusChange(event.target.checked ? 'all' : 'active')}
+                checked={status === 'inactive'}
+                onChange={(event) => onStatusChange(event.target.checked ? 'inactive' : 'active')}
               />
-              Show inactive posts
+              Show inactive posts only
             </label>
           ) : null}
 
