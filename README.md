@@ -4,6 +4,20 @@ Q&A platform for developers: posts with images, nested comments, reactions, sear
 
 **Stack:** React, Redux Toolkit, RTK Query, SCSS, Node.js, Express, MySQL, AdminJS.
 
+## Preview
+
+![USOF home page](docs/screenshots/home.png)
+
+The home page combines a question feed, search, reactions and category filters.
+
+## Features
+
+- Questions with images and nested comments.
+- Search, category filters and reactions.
+- Favorites and email subscriptions.
+- Registration, email verification and password reset.
+- Admin moderation and email invitations.
+
 ## Run
 
 Requires Node.js 22.12+, MySQL and SMTP credentials.
