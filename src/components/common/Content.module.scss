@@ -581,3 +581,14 @@
   }
 }
 
+
+@media (max-width: 1000px) {
+  .header { background: var(--c-header-gradient); }
+  .actions { margin-left: auto; flex-wrap: nowrap; gap: 8px; }
+  .headerInner { gap: 12px; padding: 16px; }
+  .yellowBackdrop { height: 220px; }
+}
+@media (max-width: 380px) {
+  .headerInner { padding: 12px; gap: 8px; }
+  .actions button { padding-inline: 12px; }
+}

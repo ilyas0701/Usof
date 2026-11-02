@@ -565,3 +565,12 @@
   border-radius: 50%;
 }
 
+
+@media (max-width: 1000px) {
+  .heroYellow { padding-top: 124px; }
+  .headerContainer { gap: 12px; }
+  .headerRight { gap: 8px; }
+}
+@media (max-width: 380px) {
+  .headerRight button { padding-inline: 12px; }
+}

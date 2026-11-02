@@ -2,7 +2,13 @@ import { createSlice } from '@reduxjs/toolkit'
 
 export const FILTERS_KEY = 'usof_question_filters'
 
-const defaults = { selectedTags: [], activeTab: 'all', dateFrom: '', dateTo: '', status: 'active' }
+const defaults = { 
+  selectedTags: [],
+  activeTab: 'all',
+  dateFrom: '',
+  dateTo: '',
+  status: 'active'
+}
 
 function readFilters() {
   try {
@@ -23,7 +29,9 @@ function readFilters() {
 const filters = createSlice({
   name: 'filters', initialState: readFilters,
   reducers: {
-    filterChanged: (state, { payload: { name, value } }) => { state[name] = value },
+    filterChanged: (state, { payload: { name, value } }) => { 
+      state[name] = value
+    },
 
     categoryToggled: (state, { payload }) => {
       state.selectedTags = state.selectedTags.includes(payload)

@@ -20,12 +20,17 @@ export default function HomePage({ onOpenAuth }) {
   const { isAuthenticated, user } = useAuth()
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false)
   const [desktopFilters, setDesktopFilters] = useState(() => window.matchMedia('(min-width: 1024px)').matches)
+
   useEffect(() => {
     const media = window.matchMedia('(min-width: 1024px)')
-    const update = () => { setDesktopFilters(media.matches); setIsFilterDrawerOpen(false) }
+    const update = () => { 
+      setDesktopFilters(media.matches);
+      setIsFilterDrawerOpen(false)
+    }
     media.addEventListener('change', update)
     return () => media.removeEventListener('change', update)
   }, [])
+
   const searchQuery = new URLSearchParams(window.location.search).get('q') || ''
   const dispatch = useDispatch()
   const { selectedTags, activeTab, dateFrom, dateTo, status } = useSelector((state) => state.filters)
@@ -42,6 +47,7 @@ export default function HomePage({ onOpenAuth }) {
     )
     return () => window.clearTimeout(timeout)
   }, [searchQuery])
+
   const categoryIds = (categories.data || []).filter((item) => selectedTags.includes(item.title)).map((item) => item.id)
   const feed = useApiResource(`/posts${debouncedQuery ? '/search' : ''}${queryString({
     page, pageSize: 10,
