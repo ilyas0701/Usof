@@ -35,7 +35,7 @@ export default function PostPage({ id, commentId }) {
   }, [shareMessage])
   const focused = useApiResource(`/comments/${commentId}`, { skip: !commentId })
   const resolvedId = commentId ? focused.data?.post_id : id
-  const detail = useApiResource(`/posts/${resolvedId}/details`, { skip: !resolvedId })
+  const detail = useApiResource(`/posts/${resolvedId}/details`, { skip: !resolvedId, refetchOnMountOrArgChange: true })
   const postId = detail.data?.post.id
   const postTitle = detail.data?.post.title
 
@@ -46,7 +46,11 @@ export default function PostPage({ id, commentId }) {
       window.history.replaceState(window.history.state, '', canonical + window.location.search + window.location.hash)
     }
   }, [postId, postTitle])
-  usePostEvents(postId, token, () => detail.reload())
+  usePostEvents(postId, token, async (signal, ready) => {
+    await detail.reload()
+
+    if (ready && !signal.aborted) await detail.reload()
+  })
   const isOwnPost = detail.data && String(user?.userId) === String(detail.data.post.author_id)
   const membership = useApiResource(`/posts/${postId}/membership`, { skip: !token || !postId || isOwnPost })
 
@@ -119,7 +123,7 @@ export default function PostPage({ id, commentId }) {
       <ResourceState
         loading={detail.loading || focused.loading}
         error={focused.error || detail.error}
-        onRetry={focused.error ? focused.reload : detail.reload}
+        onRetry={[404, 410].includes(focused.errorStatus || detail.errorStatus) ? undefined : focused.error ? focused.reload : detail.reload}
       />
       {data && (
         <>

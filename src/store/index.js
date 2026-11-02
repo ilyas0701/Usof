@@ -11,7 +11,7 @@ sessionListener.startListening({
     try {
       localStorage.setItem(FILTERS_KEY, JSON.stringify(listener.getState().filters))
     } catch {
-      /* Filters still work without storage. */
+
     }
   },
 })
@@ -35,7 +35,7 @@ sessionListener.startListening({
         localStorage.removeItem('usof_auth_user')
       }
     } catch {
-      /* The session can still work without persistent storage. */
+
     }
   },
 })

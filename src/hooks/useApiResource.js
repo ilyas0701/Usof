@@ -2,11 +2,11 @@ import { useCallback, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { api } from '../store/api'
 
-export default function useApiResource(path, { skip = false, keepPreviousData = false } = {}) {
+export default function useApiResource(path, { skip = false, keepPreviousData = false, refetchOnMountOrArgChange = 30 } = {}) {
   const dispatch = useDispatch()
   const scope = useSelector((state) => `${state.auth.token}:${state.auth.user?.role || ''}`)
 
-  const result = api.useResourceQuery({ path, scope }, { skip, refetchOnMountOrArgChange: 30 })
+  const result = api.useResourceQuery({ path, scope }, { skip, refetchOnMountOrArgChange })
   const [previous, setPrevious] = useState(null)
 
   if (keepPreviousData && result.currentData &&
@@ -14,7 +14,8 @@ export default function useApiResource(path, { skip = false, keepPreviousData = 
     setPrevious({ scope, data: result.currentData })
   }
 
-  const inaccessible = result.isError && [401, 403, 404].includes(result.error?.status)
+
+  const inaccessible = [401, 403, 404, 410].includes(result.error?.status)
 
   const setData = useCallback((update) => {
     dispatch(api.util.updateQueryData('resource', { path, scope }, (current) =>
@@ -31,6 +32,7 @@ export default function useApiResource(path, { skip = false, keepPreviousData = 
     loading: !skip && !data && !result.isError,
     fetching: !skip && result.isFetching,
     error: result.error?.message || '',
+    errorStatus: result.error?.status,
     reload: result.refetch,
     setData,
   }

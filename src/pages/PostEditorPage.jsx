@@ -153,7 +153,7 @@ function PostForm({ post, categories, selectedCategories, images = [] }) {
         </select>
         <span className={s.muted}>Inactive questions are visible only to their author and administrators.</span>
       </label>
-      {post && !moderationOnly && <label className={s.label}>
+      {!moderationOnly && <label className={s.label}>
         Add images
         <span className={s.muted}>
           Up to 5 images per upload, 5 MB each. JPEG, PNG, WebP or GIF.
@@ -174,7 +174,7 @@ function PostForm({ post, categories, selectedCategories, images = [] }) {
           }}
         />
       </label>}
-      {post && !moderationOnly && (savedImages.length > 0 || files.length > 0) && (
+      {!moderationOnly && (savedImages.length > 0 || files.length > 0) && (
         <div className={s.attachmentPreviews}>
           {savedImages.length > 0 && (
             <div>

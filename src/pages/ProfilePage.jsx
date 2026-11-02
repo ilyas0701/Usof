@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { usersApi } from '../api/usersApi'
 import { useAuth } from '../hooks/useAuth'
 import useApiResource from '../hooks/useApiResource'
@@ -21,6 +21,11 @@ function ProfileForm({ profile, onSaved }) {
     email: profile.email,
   })
   const [avatar, setAvatar] = useState(null)
+  const [avatarPreview, setAvatarPreview] = useState('')
+
+  useEffect(() => () => {
+    if (avatarPreview) URL.revokeObjectURL(avatarPreview)
+  }, [avatarPreview])
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
@@ -53,6 +58,7 @@ function ProfileForm({ profile, onSaved }) {
         updateUser(saved)
         onSaved(saved)
         setAvatar(null)
+        setAvatarPreview('')
         formElement.reset()
       }
       if (form.email.trim() !== profile.email) {
@@ -121,9 +127,27 @@ function ProfileForm({ profile, onSaved }) {
           type="file"
           accept="image/jpeg,image/png,image/webp,image/gif"
           disabled={busy}
-          onChange={(event) => setAvatar(event.target.files[0] || null)}
+          onChange={(event) => {
+            const file = event.target.files[0] || null
+            const validation = validateImages(file ? [file] : [], 1)
+            setError(validation || '')
+            if (validation) {
+              event.target.value = ''
+              setAvatar(null)
+              setAvatarPreview('')
+              return
+            }
+            setAvatar(file)
+            setAvatarPreview(file ? URL.createObjectURL(file) : '')
+          }}
         />
       </label>
+      {(avatarPreview || profile.profile_picture) && (
+        <div className={s.avatarPreview}>
+          <img src={avatarPreview || profile.profile_picture} alt={avatar ? 'Selected avatar preview' : 'Current avatar'} />
+          <span className={s.muted}>{avatar ? 'Preview — save changes to apply' : 'Current avatar'}</span>
+        </div>
+      )}
       <div className={s.actions}>
         <Button type="submit" variant="primary-black" loading={busy}>
           Save changes

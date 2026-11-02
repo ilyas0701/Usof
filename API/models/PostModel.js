@@ -218,7 +218,7 @@ class PostModel {
                 conditions.push("p.status = 'inactive' AND p.author_id = ?");
                 values.push(user.userId);
             } else if (!status && user && String(authorId) === String(user.userId)) {
-                // both active and inactive
+
             } else {
                 conditions.push("p.status = 'active'");
             }

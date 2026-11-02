@@ -1,6 +1,5 @@
 import { api } from './api.js'
 
-// Keep mounted cards in their current order while updating reactions in every cached view.
 export function updateCachedReactions(resource, id, likes) {
   return (dispatch, getState) => {
     const same = (value) => String(value) === String(id)

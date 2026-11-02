@@ -598,3 +598,17 @@
   width: 100%;
   max-width: 280px;
 }
+
+.avatarPreview {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  img {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid var(--c-sea-blue-300);
+  }
+}

@@ -19,7 +19,7 @@ function initialSession() {
       return { token, user: { ...payload, ...JSON.parse(localStorage.getItem('usof_auth_user') || '{}') } }
     }
   } catch {
-    /* Start logged out when storage is unavailable or invalid. */
+
   }
 
   return { token: '', user: null }
